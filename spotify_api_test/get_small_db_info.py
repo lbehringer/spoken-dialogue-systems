@@ -30,7 +30,7 @@ def get_artist_names(filepath):
 def create_and_connect_db(filepath):
     con = sqlite3.connect(filepath)
     cur = con.cursor()
-    cur.execute("""CREATE TABLE artists_albums (
+    cur.execute("""CREATE TABLE songfinder (
         artist_name text,
         artist_id text,
         album_name text,
@@ -45,7 +45,7 @@ def connect_db(filepath):
     return con, cur
 
 def add_row_to_db(con, cur, art_name, art_id, alb_name, alb_id):
-    cur.execute(f"INSERT INTO artists_albums VALUES (?, ?, ?, ?)", (art_name, art_id, alb_name, alb_id))
+    cur.execute("INSERT INTO songfinder VALUES (?, ?, ?, ?)", (art_name, art_id, alb_name, alb_id))
 
 
 
