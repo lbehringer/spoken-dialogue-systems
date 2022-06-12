@@ -1,0 +1,56 @@
+{
+    "discourseAct": [
+        "ack",
+        "hello",
+        "none",
+        "silence",
+        "thanks",
+        "bad"
+    ],
+    "informable": {
+        "album_name": [
+            "Abbey Road (Remastered)",
+            "Aftermath",
+            "Aretha Now",
+            "Berry Is On Top",
+            "Blue Hawaii",
+            "Electric Ladyland",
+            "Here's Little Richard (Deluxe Edition)",
+            "Motherlode",
+            "Pat Garrett & Billy The Kid (Soundtrack From The Motion Picture)",
+            "True Genius"
+        ],
+        "artist_name": [
+            "Aretha Franklin",
+            "Bob Dylan",
+            "Chuck Berry",
+            "Elvis Presley",
+            "James Brown",
+            "Jimi Hendrix",
+            "Little Richard",
+            "Ray Charles",
+            "Rolling Stones",
+            "The Beatles"
+        ]
+    },
+    "key": "artist_name",
+    "method": [
+        "none",
+        "byconstraints",
+        "byprimarykey",
+        "finished",
+        "byalternatives",
+        "restart"
+    ],
+    "requestable": [
+        "artist_name",
+        "artist_id",
+        "album_name",
+        "album_id"
+    ],
+    "system_requestable": [
+        "artist_name",
+        "album_name"
+    ],
+    "keyword": "songfinder"
+}
