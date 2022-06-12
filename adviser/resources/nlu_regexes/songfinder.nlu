@@ -1,0 +1,49 @@
+# user informable slots are name, department and position
+
+rule inform(album_name)
+    "{album_name}"
+    "the uniform should be {album_name}"
+
+rule inform(artist_name)
+    "{artist_name}"
+    "I want them to be good at {artist_name}"
+
+
+# All slots are requestable
+
+
+rule request(artist_name)
+    "what is their {slot_synonyms("artist_name")}"
+
+rule request(artist_id)
+    "what is their{slot_synonyms("artist_id")}"
+
+
+rule request(album_name)
+    "what is their {slot_synonyms("album_name")}"
+
+rule request(album_id)
+    "what is their {slot_synonyms("album_id")}"
+
+
+
+
+# synonyms
+
+function synonyms(slot, value)
+    "{value}"
+    add_if slot = "album_name"
+        if value = ""
+            ""
+
+
+
+function slot_synonyms(slot)
+    #"{IMPOSSIBLEREGEX()}"
+
+    if slot = "album_name"
+        "album_name"
+
+
+
+
