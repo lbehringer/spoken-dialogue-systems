@@ -1,6 +1,6 @@
 # ---------------NEW RULES - SONGFINDER MESSAGES-------------------------
 
-template welcomemsg(): "Welcome to the Songfinder chat bot. How may I help you?"
+template welcomemsg(): "Welcome to the conDUCKtor Songfinder chat bot. How may I help you?"
 template welcomemsg(help): "Sorry, I cannot understand you. Please tell me again what you are looking for."
 template welcomemsg(more) : "Can I help you with anything else?"
 template bad() : "Sorry I am a bit confused; please tell me again what you are looking for."
@@ -19,11 +19,11 @@ function info(slot, value, name)
 
 # -------------------------Only Name Slot-----------------------------------#
 
-template inform_byname(name)
-	"There is a song called {name}. What do you want to know about it?"
+template inform_byname(artist_name)
+	"There is an artist called {artist_name}. What do you want to know about it?"
 
-	#special_case name = "none"
-	#	"I’m sorry, I could not find a matching song."
+	#special_case artist_name = "none"
+	#	"I’m sorry, I could not find a matching artist."
 
 
 template inform_alternatives(name)
