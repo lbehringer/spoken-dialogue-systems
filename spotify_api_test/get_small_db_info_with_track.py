@@ -19,12 +19,12 @@ def get_artist_id(artist_name):
 def get_top_track_album(artist_id):
     results = spotify.artist_top_tracks(artist_id)
     top_track = results["tracks"][0]
-    print("Top track: " + top_track["name"])
-    print("Top track album: " + top_track["album"]["name"])
-    # HERE: return top_track, top_track_id, album, and album_id
-    # 
-    # 
-    # return top_track["album"]["name"], top_track["album"]["id"]
+    track_name = top_track["name"]
+    track_id = top_track ['id']
+    album_name = top_track["album"]["name"]
+    album_id = top_track["album"]["id"]
+    return track_name, track_id, album_name , album_id
+
 
 def get_artist_names(filepath):
     with open(filepath, "r") as f:
@@ -33,15 +33,13 @@ def get_artist_names(filepath):
 def create_and_connect_db(filepath):
     con = sqlite3.connect(filepath)
     cur = con.cursor()
-    #
-    # HERE: add columns for top_track_name and top_track_id
-    #
-    #
     cur.execute("""CREATE TABLE songfinder (
         artist_name text,
         artist_id text,
         album_name text,
-        album_id text
+        album_id text,
+        track_name text,
+        track_id text
     )""")
     con.commit()
     return con, cur
@@ -51,11 +49,8 @@ def connect_db(filepath):
     cur = con.cursor()
     return con, cur
 
-def add_row_to_db(con, cur, art_name, art_id, alb_name, alb_id):
-    #
-    # add top_track_name and top_track_id
-    #
-    cur.execute("INSERT INTO songfinder VALUES (?, ?, ?, ?)", (art_name, art_id, alb_name, alb_id))
+def add_row_to_db(con, cur, art_name, art_id, alb_name, alb_id, track_name, track_id):
+    cur.execute("INSERT INTO songfinder VALUES (?, ?, ?, ?, ?, ?)", (art_name, art_id, alb_name, alb_id, track_name, track_id))
 
 
 
@@ -73,16 +68,7 @@ if __name__ == "__main__":
     artist_names = get_artist_names(args.artists_file)
     for artist_name in artist_names:
         artist_id = get_artist_id(artist_name)
-        # 
-        # HERE: use get_top_track_album to assign to top_track_name, top_track_id, album_name, and album_id
-        # 
-        # album_name, album_id = get_top_track_album(artist_id)
-        # add row to db
-        #
-        #HERE: add_row with also top_track_name and top_track_id
-        #
-        # add_row_to_db(con, cur, artist_name, artist_id, album_name, album_id)
-        #print(artist_id)
-        #print(album_id)
+        track_name, track_id, album_name, album_id = get_top_track_album(artist_id)
+        add_row_to_db(con, cur, artist_name, artist_id, album_name, album_id, track_name, track_id)
     con.commit()
     con.close()
