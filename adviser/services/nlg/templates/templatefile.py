@@ -97,6 +97,7 @@ class TemplateFile:
             str -- the message returned by the template
         """
         slots = self._create_memory_from_sys_act(sys_act)
+        print(slots.variable_dict)
         for template in self._templates[sys_act.type.value]:
             if template.is_applicable(slots):
                 return template.apply(slots)

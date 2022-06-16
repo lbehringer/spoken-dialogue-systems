@@ -31,9 +31,21 @@
             "Ray Charles",
             "Rolling Stones",
             "The Beatles"
+        ],
+        "track_name": [
+            "All Along the Watchtower",
+            "Can't Help Falling in Love",
+            "Here Comes The Sun - Remastered 2009",
+            "Hit the Road Jack",
+            "I Say a Little Prayer",
+            "Johnny B. Goode",
+            "Knockin' On Heaven's Door",
+            "Paint It, Black",
+            "People Get Up And Drive Your Funky Soul - Remix",
+            "Tutti Frutti"
         ]
     },
-    "key": "artist_name",
+    "key": "track_name",
     "method": [
         "none",
         "byconstraints",
@@ -46,7 +58,9 @@
         "artist_name",
         "artist_id",
         "album_name",
-        "album_id"
+        "album_id",
+        "track_name",
+        "track_id"
     ],
     "system_requestable": [
         "artist_name",

@@ -16,15 +16,35 @@ template request(album_name): "Could you tell me the album on which the song was
 function info(slot, value, name)
 	if slot = "artist_name": "is by the following artist: \"{value}\""
 	if slot = "album_name": "was released on the following album: \"{value}\""
+	if slot = "track_name": "system inform track name: \"{value}\""
 
 # -------------------------Only Name Slot-----------------------------------#
 
-template inform_byname(artist_name)
-	"There is an artist called {artist_name}. What do you want to know about it?"
+
+##### ARE THE template inform(...) WRONG? ###
+# there seems to be no system act defined for this in utils/sysact.py
+
+template inform(artist_name)
+	"There is an artist called {artist_name}. What do you want to know about them?"
+
+template inform(track_name)
+	"There is a track called {track_name}. What do you want to know about it?"
+
+template inform(track_name, artist_name)
+	"There is a track called {track_name} by the artist {artist_name}. What do you want to know about it?"
+
+template inform_byname(track_name)
+	"There is a track called {track_name}. What do you want to know about it?"
 
 	#special_case artist_name = "none"
 	#	"I’m sorry, I could not find a matching artist."
 
+template inform_byname(track_name, artist_name)
+	"There is a track called {track_name} by the artist {artist_name}. What do you want to know about it?"
+
+# General rule for track_name plus potentially more slot values
+template inform_byname(track_name, *slots)
+	"{for_entry(slots, "info", ", ", " and ", track_name)}."
 
 template inform_alternatives(name)
 	"There is another song called {name}. What do you want to know about them?"
