@@ -1,12 +1,24 @@
-# user informable slots are name, department and position
+# general rules
+
+rule hello(): "(\\b|^|\\ )(hi|hello|howdy|hey)\\b"
+rule bye(): "(\\b|^|\\ )(bye(-)?(bye)?|good(-)?bye|that'?s?\\ (is\\ )*all)(\\s|$|\\ |\\.)"
+rule deny(): "((\\b|^|\\ )(n(o)?|wrong|incorrect|error|nope)|(not\\ (true|correct|right)))(\\s)?$"
+rule affirm(): "((yes|yeah|(\\b|^)ok\\b|(\\b|^)OK|okay|sure|^y$|(\\b|^)yep(\\b|$)|(that('?s| is) )?(?<!not\\ )(?<!no\\ )(right|correct|confirm)))(\\s)?$"
+rule thanks(): "(?=.*(^(\\ )*)(((great|good|awesome|nice|cool)\\ )?((that((')?s|\\ (is|was))\\ (very\\ )?helpful)\\ )?(thank|thank(s|\\ you)(\\ (very|so)\\ much)?)(\\ (that((')?s|\\ (is|was))\\ (very\\ )?helpful))?|((great|good|awesome|nice|cool)\\ )?(that((')?s|\\ (is|was))\\ (very\\ )?helpful)|(great|good|awesome|nice|cool))((\\ )*))(?=^(?:(?!bye).)*$).*$"
+rule repeat(): "(\\b|^|\\ )(repeat((\\ that )|(\\ it))?)|(say((\\ that )|(\\ it))\\ again)|(again)"
+rule reqalts(): "(\\b|^|\\ )((something|anything)\\ else)|(different(\\ one)*)|(another\\ one)|(alternatives*)|(other options*)|((don'*t|do not) (want|like)\\ (that|this)(\\ one)*)"
+rule ack(): "{IMPOSSIBLEREGEX()}"
+rule bad(): "{IMPOSSIBLEREGEX()}"
+
+# user informable slots are album_name and artist_name
 
 rule inform(album_name)
     "{album_name}"
-    "the uniform should be {album_name}"
+    "the album name should be {album_name}"
 
 rule inform(artist_name)
     "{artist_name}"
-    "I want them to be good at {artist_name}"
+    "the artist should be {artist_name}"
 
 
 # All slots are requestable
@@ -39,11 +51,13 @@ function synonyms(slot, value)
 
 
 function slot_synonyms(slot)
-    #"{IMPOSSIBLEREGEX()}"
+    "{IMPOSSIBLEREGEX()}"
 
     if slot = "album_name"
-        "album_name"
+        "album name"
 
+    if slot = "artist_name"
+        "artist name"
 
 
 
