@@ -13,9 +13,9 @@ template request(album_name): "Could you tell me the album on which the song was
 
 # Rules for System Inform
 
-function info(slot, value, name)
-	if slot = "artist_name": "is by the following artist: \"{value}\""
-	if slot = "album_name": "was released on the following album: \"{value}\""
+function info(slot, value, track_name)
+	if slot = "artist_name": "{track_name} is by the following artist: \"{value}\""
+	if slot = "album_name": "{track_name} was released on the following album: \"{value}\""
 	if slot = "track_name": "system inform track name: \"{value}\""
 
 # -------------------------Only Name Slot-----------------------------------#

@@ -109,7 +109,6 @@ class JSONLookupDomain(Domain):
         db.cursor().executescript(tempfile.read())
         db.commit()
         # file_db.backup(databases[domain]) # works only in python >= 3.7
-
         return db
 
     def find_entities(self, constraints: dict, requested_slots: Iterable = iter(())):
@@ -134,6 +133,7 @@ class JSONLookupDomain(Domain):
         if constraints:
             query += ' WHERE ' + ' AND '.join("{}='{}' COLLATE NOCASE".format(key, str(val))
                                               for key, val in constraints.items())
+        print("Candidates in database: " + str(self.query_db(query)))
         return self.query_db(query)
 
     def find_info_about_entity(self, entity_id, requested_slots: Iterable):
