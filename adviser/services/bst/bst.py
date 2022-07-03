@@ -60,9 +60,13 @@ class HandcraftedBST(Service):
 
             self._handle_user_acts(user_acts)
 
-            num_entries, discriminable = self.bs.get_num_dbmatches()
-            self.bs["num_matches"] = num_entries
-            self.bs["discriminable"] = discriminable
+            if user_acts[0].type == UserActionType.SelectOption:
+                self.bs["num_matches"] = 1
+                self.bs["discriminable"] = True
+            else:
+                num_entries, discriminable = self.bs.get_num_dbmatches()
+                self.bs["num_matches"] = num_entries
+                self.bs["discriminable"] = discriminable
 
         return {'beliefstate': self.bs}
 
@@ -140,6 +144,9 @@ class HandcraftedBST(Service):
                     self.bs['informs'][act.slot][act.value] = act.score
                 else:
                     self.bs['informs'][act.slot] = {act.value: act.score}
+            elif act.type == UserActionType.SelectOption:
+                # Select is similar to an inform but overwrites previous a previous list entry with a string
+                self.bs['informs'][act.slot] = {act.value: act.score}
             elif act.type == UserActionType.NegativeInform:
                 # reset mentioned value to zero probability
                 if act.slot in self.bs['informs']:

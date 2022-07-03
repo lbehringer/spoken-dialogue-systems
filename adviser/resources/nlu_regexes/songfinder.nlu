@@ -20,6 +20,10 @@ rule inform(artist_name)
     "{artist_name}"
     "the artist should be {artist_name}"
 
+rule inform(track_name)
+    "{track_name}"
+    "the track name should be {track_name}"
+
 
 # All slots are requestable
 
@@ -37,8 +41,17 @@ rule request(album_name)
 rule request(album_id)
     "what is their {slot_synonyms("album_id")}"
 
+rule request(track_id)
+    "what is their {slot_synonyms("track_id")}"
+
+rule request(track_name)
+    "what is their {slot_synonyms("track_name")}"
 
 
+# Select one of several options
+
+rule selectoption(track_name)
+    "I select {slot_synonyms("track_name")}"
 
 # synonyms
 
@@ -59,5 +72,13 @@ function slot_synonyms(slot)
     if slot = "artist_name"
         "artist name"
 
+    if slot = "track_id"
+        "track id"
 
+    if slot = "track_name"
+        "track name"
+    
+    if slot = "track_names_list"
+        "tracks"
 
+function IMPOSSIBLEREGEX(): "^\b$"
