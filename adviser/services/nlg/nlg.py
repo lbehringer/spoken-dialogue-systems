@@ -109,7 +109,7 @@ class HandcraftedNLG(Service):
                              + " - Slots: " + str(sys_act.slot_values))
 
         # self.logger.dialog_turn("System Action: " + message)
-        print("System act: " + str(sys_act))
+        print("System act in nlg.py: " + str(sys_act))
         print("System act type: " + str(sys_act.type))
         return message
 

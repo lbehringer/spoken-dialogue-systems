@@ -100,6 +100,7 @@ class TemplateFile:
         print("Slots to request by system: " + str(slots.variable_dict))
         for template in self._templates[sys_act.type.value]:
             if template.is_applicable(slots):
+                print(f"Creating memory from sys_act {sys_act}")
                 return template.apply(slots)
         raise BaseException('No template was found for the given system act.')
 

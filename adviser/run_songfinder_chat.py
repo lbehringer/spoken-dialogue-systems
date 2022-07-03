@@ -33,16 +33,20 @@ def load_nlg(backchannel: bool, domain = None):
     return nlg
 
 def load_songfinder_domain(backchannel: bool = False):
-    from utils.domain.jsonlookupdomain import JSONLookupDomain
-    from services.nlu.nlu import HandcraftedNLU
+    #from utils.domain.jsonlookupdomain import JSONLookupDomain
+    from utils.domain.song import SongDomain
+    #from services.nlu.nlu import HandcraftedNLU
+    from utils.domain.song.nlu import SongNLU
     from services.nlg.nlg import HandcraftedNLG
-    from services.policy import HandcraftedPolicy
-    domain = JSONLookupDomain('songfinder')
-    song_nlu = HandcraftedNLU(domain=domain)
-    song_bst = HandcraftedBST(domain=domain)
-    song_policy = HandcraftedPolicy(domain=domain)
-    song_nlg = load_nlg(backchannel=backchannel, domain=domain)
-    return domain, [song_nlu, song_bst, song_policy, song_nlg]
+    #from services.policy import HandcraftedPolicy
+    from services.policy.policy_api import HandcraftedPolicy as PolicyAPI
+    songfinder = SongDomain()
+    song_nlu = SongNLU(domain=songfinder)
+    song_bst = HandcraftedBST(domain=songfinder)
+    #song_policy = HandcraftedPolicy(domain=domain)
+    song_policy = PolicyAPI(domain=songfinder)
+    song_nlg = load_nlg(backchannel=backchannel, domain=songfinder)
+    return songfinder, [song_nlu, song_bst, song_policy, song_nlg]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='conDUCKtor - ADVISER-based Dialog System')

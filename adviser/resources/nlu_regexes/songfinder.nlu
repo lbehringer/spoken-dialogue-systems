@@ -48,6 +48,11 @@ rule request(track_name)
     "what is their {slot_synonyms("track_name")}"
 
 
+# Select one of several options
+
+rule selectoption(track_name)
+    "I select {slot_synonyms("track_name")}"
+
 # synonyms
 
 function synonyms(slot, value)
@@ -72,5 +77,8 @@ function slot_synonyms(slot)
 
     if slot = "track_name"
         "track name"
+    
+    if slot = "track_names_list"
+        "tracks"
 
 function IMPOSSIBLEREGEX(): "^\b$"
