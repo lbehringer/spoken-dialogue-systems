@@ -57,18 +57,18 @@ class SongNLU(HandcraftedNLU):
         # if last system act was Select, generate SelectOption user act:
         if self.sys_act_info["last_act"]:
             if self.sys_act_info["last_act"].type == SysActionType.Select:
+                print(self.sys_act_info)
                 if user_utterance is not None:
                     user_utterance = user_utterance.strip()
                     if self.sys_act_info["last_act"].slot_values:
                         key = list(self.sys_act_info["last_act"].slot_values.keys())[0]
-                        values_lower = [val.lower() for val in self.sys_act_info["last_act"].slot_values[key][0]]
-                        if user_utterance in values_lower:
-                            #slot = self.sys_act_info["last_act"].slot_values[key]
-                            slot = key
-                            self.user_acts.append(UserAct(slot=slot, value=user_utterance,
+                        for val in self.sys_act_info["last_act"].slot_values[key][0]:
+                            if user_utterance == val.lower():
+                                slot = key
+                                self.user_acts.append(UserAct(slot=slot, value=val,
                                                 act_type=UserActionType.SelectOption))
-                            result["user_acts"] = self.user_acts
-                            return result
+                                result["user_acts"] = self.user_acts
+                                return result
 
         # slots_requested & slots_informed store slots requested and informed in this turn
         # they are used later for later disambiguation

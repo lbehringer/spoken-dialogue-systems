@@ -50,8 +50,8 @@ template inform_byname(artificial_id)
 #template inform_byname(track_names_list, album_name, artist_name)
 #	"The album {album_name} by the artist {artist_name} contains the following tracks: {track_names_list}. Which track are you interested in?"
 
-#template inform_byname(artificial_id, track_name, album_name, artist_name)
-#	"There is a track called {track_name} by the artist {artist_name} on {album_name}. What do you want to know about it?"
+template inform_byname(artificial_id, track_name, album_name, artist_name)
+	"There is a track called {track_name} by the artist {artist_name} on {album_name}. What do you want to know about it?"
 
 template inform_byname(artificial_id, *slots)
 	if artificial_id = "none"
@@ -59,6 +59,10 @@ template inform_byname(artificial_id, *slots)
 
 template inform_byname(track_name, artist_name)
 	"There is a track called {track_name} by the artist {artist_name}. What do you want to know about it?"
+
+# THIS RULE IS AN ATTEMPT FOR AFTER THE USER SELECTED:
+template inform_byname(artificial_id, track_name, artist_name, album_name)
+	"You have selected the track {track_name}. What would you like to know about this track?"
 
 # General rule for track_name plus potentially more slot values
 template inform_byname(track_name, *slots)

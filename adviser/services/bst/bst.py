@@ -54,6 +54,8 @@ class HandcraftedBST(Service):
         # save last turn to memory
         self.bs.start_new_turn()
         if user_acts:
+            print(f"User acts at start of update_bst: {user_acts}")
+            self._reset_select_informs(user_acts)
             self._reset_informs(user_acts)
             self._reset_requests()
             self.bs["user_acts"] = self._get_all_usr_action_types(user_acts)
@@ -62,12 +64,11 @@ class HandcraftedBST(Service):
 
             if user_acts[0].type == UserActionType.SelectOption:
                 self.bs["num_matches"] = 1
-                self.bs["discriminable"] = True
+                self.bs["discriminable"] = False
             else:
                 num_entries, discriminable = self.bs.get_num_dbmatches()
                 self.bs["num_matches"] = num_entries
                 self.bs["discriminable"] = discriminable
-
         return {'beliefstate': self.bs}
 
     def dialog_start(self):
@@ -80,6 +81,18 @@ class HandcraftedBST(Service):
         """
         # initialize belief state
         self.bs = BeliefState(self.domain)
+
+    def _reset_select_informs(self, acts: List[UserAct]):
+        """
+            If the user specifies a new value for a given slot, delete the old
+            entry from the beliefstate
+        """
+
+        slots = {act.slot for act in acts if act.type == UserActionType.SelectOption}
+        for slot in [s for s in self.bs['informs']]:
+            if slot in slots:
+                del self.bs['informs'][slot]
+
 
     def _reset_informs(self, acts: List[UserAct]):
         """
