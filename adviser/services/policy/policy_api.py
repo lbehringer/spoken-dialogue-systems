@@ -288,6 +288,7 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
+        print(f"Beliefstate passed to policy_api.py: {beliefstate}")
         sys_state = {}
         # Assuming this happens only because domain is not actually active --LV
         """if UserActionType.Bad in beliefstate['user_acts'] or beliefstate['requests'] \
@@ -319,7 +320,6 @@ class HandcraftedPolicy(Service):
         results = self._query_db(beliefstate)
         sys_act = self._raw_action(results, beliefstate)
         print(f"sys_act in policy_api.py: {sys_act}")
-
         # requests are fairly easy, if it's a request, return it directly
         if sys_act.type == SysActionType.Request:
             if len(list(sys_act.slot_values.keys())) > 0:
@@ -332,6 +332,7 @@ class HandcraftedPolicy(Service):
             self._convert_inform(results, sys_act, beliefstate)
             # update belief state to reflect the offer we just made
             values = sys_act.get_values(self.domain.get_primary_key())
+            print(f"Sys act with values: {sys_act}")
             if values:
                 # belief_state['system']['lastInformedPrimKeyVal'] = values[0]
                 sys_state['lastInformedPrimKeyVal'] = values[0]
@@ -483,6 +484,7 @@ class HandcraftedPolicy(Service):
             self._convert_inform_by_alternatives(sys_act, q_results, beliefstate)
 
         else:
+            print("calling _convert_inform_by_constraints")
             self._convert_inform_by_constraints(q_results, sys_act, beliefstate)
 
     def _convert_inform_by_primkey(self, q_results: iter,
@@ -581,7 +583,9 @@ class HandcraftedPolicy(Service):
             for result in q_results:
                 self.current_suggestions.append(result)
             result = self.current_suggestions[0]
+            ##### THE NEXT LINE IS RESPONSIBLE FOR THE DOUBLE ENTRY
             sys_act.add_value(self.domain_key, result[self.domain_key])
+            print(sys_act.slot_values)
             # Add default Inform slots
             for slot in self.domain.get_default_inform_slots():
                 if slot not in sys_act.slot_values:
