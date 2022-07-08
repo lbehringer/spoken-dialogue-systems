@@ -133,7 +133,7 @@ class JSONLookupDomain(Domain):
         if constraints:
             query += ' WHERE ' + ' AND '.join("{}='{}' COLLATE NOCASE".format(key, str(val))
                                               for key, val in constraints.items())
-        print("Candidates in database: " + str(self.query_db(query)))
+        #####print("Candidates in database: " + str(self.query_db(query)))
         return self.query_db(query)
 
     def find_info_about_entity(self, entity_id, requested_slots: Iterable):

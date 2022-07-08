@@ -54,7 +54,7 @@ class HandcraftedBST(Service):
         # save last turn to memory
         self.bs.start_new_turn()
         if user_acts:
-            print(f"User acts at start of update_bst: {user_acts}")
+            #####print(f"User acts at start of update_bst: {user_acts}")
             self._reset_select_informs(user_acts)
             self._reset_informs(user_acts)
             self._reset_requests()

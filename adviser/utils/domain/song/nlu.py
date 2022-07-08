@@ -57,7 +57,7 @@ class SongNLU(HandcraftedNLU):
         # if last system act was Select, generate SelectOption user act:
         if self.sys_act_info["last_act"]:
             if self.sys_act_info["last_act"].type == SysActionType.Select:
-                print(self.sys_act_info)
+                #####print(self.sys_act_info)
                 if user_utterance is not None:
                     user_utterance = user_utterance.strip()
                     if self.sys_act_info["last_act"].slot_values:
@@ -98,14 +98,6 @@ class SongNLU(HandcraftedNLU):
         result['user_acts'] = self.user_acts
         self.logger.dialog_turn("User Actions: %s" % str(self.user_acts))
         return result
-
-    # @PublishSubscribe(sub_topics=["sys_act"], pub_topics=["selectable_options"])
-    # def extract_sys_act(self, sys_act):
-    #     if sys_act:
-    #         if sys_act.type == SysActionType.Select:
-    #             vals = sys_act.slot_values
-    #             print(f"System act slot values: {vals}")
-    #             return sys_act.slot_values
 
 
     @PublishSubscribe(sub_topics=["sys_state"], pub_topics=["selectable_values"])

@@ -121,15 +121,20 @@ template reqmore()
 #		"Would you like me to look for a superhero associated with any organisation?"
 
 # ---------------------------System Select----------------------------------#
-# This rule gets 
-#template select(*track_name)
-#	"Please select one of the following tracks: {for_entry(track_name, "info_or_dontcare_list", "", "")}."
+
+
+template select(*slot)
+	"Please select one of the following tracks: {for_entry(slot, "track_name_or_dontcare_list", "", "")}."
+
+function track_name_or_dontcare_list(slot, value_list)
+	"{for(value_list, "track_name_or_dontcare", ", ", " or ", slot)}"
+
+function track_name_or_dontcare(value, slot)
+	"{info(slot, value, "none")}"
+	special_case value = "dontcare": "you don't care"
 
 template select(*slot)
 	"Sorry, would you like to have a song {for_entry(slot, "info_or_dontcare_list", "", "")}?"
-
-template select(album_name, artist_name, track_names_list)
-	"Please select one of these songs: {for_entry(slot, "info_or_dontcare_list", "", "")}"
 
 function info_or_dontcare_list(slot, value_list)
 	"{for(value_list, "info_or_dontcare", ", ", " or ", slot)}"
@@ -137,3 +142,11 @@ function info_or_dontcare_list(slot, value_list)
 function info_or_dontcare(value, slot)
 	"which {info(slot, value, "none")}"
 	special_case value = "dontcare": "you don't care"
+
+function info_or_dontcare_list(slot, value_list)
+	"{for(value_list, "info_or_dontcare", ", ", " or ", slot)}"
+
+function info_or_dontcare(value, slot)
+	"which {info(slot, value, "none")}"
+	special_case value = "dontcare": "you don't care"
+
