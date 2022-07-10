@@ -288,7 +288,7 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
-        #####print(f"Beliefstate passed to policy_api.py: {beliefstate}")
+        print(f"Beliefstate passed to policy_api.py: {beliefstate}")
         sys_state = {}
         # Assuming this happens only because domain is not actually active --LV
         """if UserActionType.Bad in beliefstate['user_acts'] or beliefstate['requests'] \
