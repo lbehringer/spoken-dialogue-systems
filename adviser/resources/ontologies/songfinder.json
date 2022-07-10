@@ -59,10 +59,7 @@
         "artist_id",
         "album_name",
         "album_id",
-<<<<<<< HEAD
-=======
         "track_name",
->>>>>>> master
         "track_id"
     ],
     "system_requestable": [
