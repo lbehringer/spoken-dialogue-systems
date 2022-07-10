@@ -97,8 +97,8 @@ class SongDomain(LookupDomain):
                         cleaned_result_dict = result_dict
                     cleaned_result_list.append(cleaned_result_dict)
                     self.last_results.append(cleaned_result_list)
-                print("returning list of results")
-                print(cleaned_result_list)
+                #####print("returning list of results")
+                #####print(cleaned_result_list)
                 return cleaned_result_list
         else:
             return []       
@@ -164,10 +164,8 @@ class SongDomain(LookupDomain):
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
                 track_names_list = [track["name"] for track in results["tracks"]["items"]]
-                print("printing results of API call in domain.py")
-                print(f"resulting list of tracks: {track_names_list}")
-                #print(results["tracks"]["items"][0]["name"])
-                #return results["tracks"]["items"][0]["name"]
+                #####print("printing results of API call in domain.py")
+                #####print(f"resulting list of tracks: {track_names_list}")
                 return track_names_list
             except BaseException as e:
                 raise(e)
@@ -188,7 +186,7 @@ class SongDomain(LookupDomain):
         market = "DE"
         query = f"artist:{artist_name}"
         results = self.spotify.search(query, market=market)
-        print(results)
+        #####print(results)
         pass
 
 

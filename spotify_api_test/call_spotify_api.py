@@ -16,14 +16,17 @@ if nlu_artist_keyword in utterance:
 # set a filter to narrow down results during search 
 filter = None
 
-type = "artist"
-
+type = "track"
+artist_name = "rolling stones"
+album_name = "aftermath"
+track_name = "stupid girl"
 # q is the query 
-q = "the%rolling%stones"
+q = f"artist:{artist_name}, album:{album_name}, track:{track_name}"
+#q = f"artist:Jinjer"
 # specify market region (country code)
 market = "DE"
-results = spotify.search(q, market=market)
-print(results.keys())
+results = spotify.search(q, market=market, type=type)
+print(results)
 for key in results.keys():
     print(key)
     for item in results[key]["items"]:
