@@ -288,6 +288,7 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
+        #####print(f"Beliefstate passed to policy_api.py: {beliefstate}")
         sys_state = {}
         # Assuming this happens only because domain is not actually active --LV
         """if UserActionType.Bad in beliefstate['user_acts'] or beliefstate['requests'] \
@@ -318,7 +319,7 @@ class HandcraftedPolicy(Service):
         # Otherwise we need to query the db to determine next action
         results = self._query_db(beliefstate)
         sys_act = self._raw_action(results, beliefstate)
-
+        #####print(f"sys_act in policy_api.py: {sys_act}")
         # requests are fairly easy, if it's a request, return it directly
         if sys_act.type == SysActionType.Request:
             if len(list(sys_act.slot_values.keys())) > 0:
@@ -331,6 +332,7 @@ class HandcraftedPolicy(Service):
             self._convert_inform(results, sys_act, beliefstate)
             # update belief state to reflect the offer we just made
             values = sys_act.get_values(self.domain.get_primary_key())
+            #####print(f"Sys act with values: {sys_act}")
             if values:
                 # belief_state['system']['lastInformedPrimKeyVal'] = values[0]
                 sys_state['lastInformedPrimKeyVal'] = values[0]
@@ -338,6 +340,10 @@ class HandcraftedPolicy(Service):
                 sys_act.add_value(self.domain.get_primary_key(), 'none')
 
         sys_state['last_act'] = sys_act
+        #####print(f"sys_state in policy_api.py{sys_state}")
+        #####print(type(sys_state["last_act"]))
+        #####print(sys_state["last_act"].type)
+        #####print(sys_state["last_act"].slot_values)
         return (sys_act, sys_state)
 
     def _raw_action(self, q_res: iter, beliefstate: BeliefState) -> SysAct:
@@ -358,7 +364,10 @@ class HandcraftedPolicy(Service):
         sys_act = SysAct()
         # if there is more than one result
         if len(q_res) > 1:
+            #####print("raw_action received result list of length >1")
             constraints, dontcare = self._get_constraints(beliefstate)
+            #####print(f"constraints: {constraints}")
+            #####print(f"dontcare: {dontcare}")
             # Gather all the results for each column
             temp = {key: [] for key in q_res[0].keys()}
             # If any column has multiple values, ask for clarification
@@ -366,15 +375,35 @@ class HandcraftedPolicy(Service):
                 for key in result.keys():
                     if key != self.domain_key:
                         temp[key].append(result[key])
-            next_req = self._gen_next_request(temp, beliefstate)
-            if next_req:
-                sys_act.type = SysActionType.Request
-                sys_act.add_value(next_req)
-                return sys_act
+            #####print(f"temp: {temp}")
+            # get column with most unique values
+            max_set_len = 0
+            max_len_key = ""
+            for key in temp.keys():
+                if len(set(temp[key])) > max_set_len:
+                    max_len_key = key
+                    max_set_len = len(set(temp[key]))
+            #####print(f"Key with max unique values: {max_len_key}")
+            #next_sel = self._gen_next_select(max_len_key, beliefstate)
+            sys_act.type = SysActionType.Select
+            sys_act.add_value(max_len_key, value = temp[max_len_key])
+            return sys_act
+
+            # next_req = self._gen_next_request(temp, beliefstate)
+            # if next_req:
+            #####     print(next_req)
+            #####     print("next sysact is request")
+            #     sys_act.type = SysActionType.Request
+            #     sys_act.add_value(next_req)
+            #     return sys_act
 
         # Otherwise action type will be inform, so return an empty inform (to be filled in later)
         sys_act.type = SysActionType.InformByName
+        #####print("next sysact is inform")
         return sys_act
+ 
+    #def _gen_next_select(self, temp: Dict[str, List[str]], belief_state: BeliefState):
+    #    pass
 
     def _gen_next_request(self, temp: Dict[str, List[str]], belief_state: BeliefState):
         """
@@ -455,6 +484,7 @@ class HandcraftedPolicy(Service):
             self._convert_inform_by_alternatives(sys_act, q_results, beliefstate)
 
         else:
+            #####print("calling _convert_inform_by_constraints")
             self._convert_inform_by_constraints(q_results, sys_act, beliefstate)
 
     def _convert_inform_by_primkey(self, q_results: iter,
@@ -553,7 +583,9 @@ class HandcraftedPolicy(Service):
             for result in q_results:
                 self.current_suggestions.append(result)
             result = self.current_suggestions[0]
+            ##### THE NEXT LINE IS RESPONSIBLE FOR THE DOUBLE ENTRY
             sys_act.add_value(self.domain_key, result[self.domain_key])
+            #####print(sys_act.slot_values)
             # Add default Inform slots
             for slot in self.domain.get_default_inform_slots():
                 if slot not in sys_act.slot_values:

@@ -74,7 +74,8 @@ class SysAct(object):
         if slot not in self.slot_values:
             self.slot_values[slot] = []
         if value is not None:
-            self.slot_values[slot].append(value)
+            if value not in self.slot_values[slot]:
+                self.slot_values[slot].append(value)
 
     def get_values(self, slot) -> list:
         """ Return all values for slot
@@ -86,6 +87,7 @@ class SysAct(object):
         if slot not in self.slot_values:
             return []
         else:
+            #####print(self.slot_values)
             return self.slot_values[slot]
 
     def __eq__(self, other):

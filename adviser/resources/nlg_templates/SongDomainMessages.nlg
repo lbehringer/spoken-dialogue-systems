@@ -16,7 +16,8 @@ template request(album_name): "Could you tell me the album on which the song was
 function info(slot, value, track_name)
 	if slot = "artist_name": "{track_name} is by the following artist: \"{value}\""
 	if slot = "album_name": "{track_name} was released on the following album: \"{value}\""
-	if slot = "track_name": "system inform track name: \"{value}\""
+	if slot = "track_name": "\"{value}\""
+	if slot = "artificial_id": "system inform articial id: \"{value}\""
 
 # -------------------------Only Name Slot-----------------------------------#
 
@@ -39,12 +40,37 @@ template inform_byname(track_name)
 	#special_case artist_name = "none"
 	#	"I’m sorry, I could not find a matching artist."
 
+template inform_byname(artificial_id)
+	if artificial_id = "none": "I’m sorry, I could not find such a track."
+
+#template inform_byname(artificial_id, track_name, *slots)
+#	"The track {track_name} {for_entry(slots, "info", ", ", " and ")}."
+#	#"The track {track_name}."
+
+#template inform_byname(track_names_list, album_name, artist_name)
+#	"The album {album_name} by the artist {artist_name} contains the following tracks: {track_names_list}. Which track are you interested in?"
+
+template inform_byname(artificial_id, track_name, album_name, artist_name)
+	"There is a track called {track_name} by the artist {artist_name} on {album_name}. What do you want to know about it?"
+
+template inform_byname(artificial_id, *slots)
+	if artificial_id = "none"
+		"There is no such track which {for_entry(slots, "info", ", ", " and ")}."
+
 template inform_byname(track_name, artist_name)
 	"There is a track called {track_name} by the artist {artist_name}. What do you want to know about it?"
+
+# THIS RULE IS AN ATTEMPT FOR AFTER THE USER SELECTED:
+template inform_byname(artificial_id, track_name, artist_name, album_name)
+	"You have selected the track {track_name}. What would you like to know about this track?"
 
 # General rule for track_name plus potentially more slot values
 template inform_byname(track_name, *slots)
 	"{for_entry(slots, "info", ", ", " and ", track_name)}."
+
+# TEMPORARY general rule for track_names_list plus potentially more slot values
+#template inform_byname(track_names_list, *slots)
+#	"{for_entry(slots, "info", ", ", " and ", track_names_list)}."
 
 template inform_alternatives(name)
 	"There is another song called {name}. What do you want to know about them?"
@@ -96,6 +122,17 @@ template reqmore()
 
 # ---------------------------System Select----------------------------------#
 
+
+template select(*slot)
+	"Please select one of the following tracks: {for_entry(slot, "track_name_or_dontcare_list", "", "")}."
+
+function track_name_or_dontcare_list(slot, value_list)
+	"{for(value_list, "track_name_or_dontcare", ", ", " or ", slot)}"
+
+function track_name_or_dontcare(value, slot)
+	"{info(slot, value, "none")}"
+	special_case value = "dontcare": "you don't care"
+
 template select(*slot)
 	"Sorry, would you like to have a song {for_entry(slot, "info_or_dontcare_list", "", "")}?"
 
@@ -105,3 +142,11 @@ function info_or_dontcare_list(slot, value_list)
 function info_or_dontcare(value, slot)
 	"which {info(slot, value, "none")}"
 	special_case value = "dontcare": "you don't care"
+
+function info_or_dontcare_list(slot, value_list)
+	"{for(value_list, "info_or_dontcare", ", ", " or ", slot)}"
+
+function info_or_dontcare(value, slot)
+	"which {info(slot, value, "none")}"
+	special_case value = "dontcare": "you don't care"
+
