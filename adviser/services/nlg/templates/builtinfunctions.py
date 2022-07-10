@@ -54,6 +54,8 @@ class ForEntryFunction(Function):
 
         for slot_value_pair in parameters.variables[0].value:
             memory = self._build_memory(slot_value_pair[0], slot_value_pair[1], extra_arguments)
+            print(slot_value_pair)
+            print(extra_arguments)
             if not function.is_applicable(memory):
                 raise BaseException(f'The function {function.function_name} could not be called '
                                     f'from the for_entry function')
