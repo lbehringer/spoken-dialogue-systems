@@ -55,7 +55,7 @@ class SongDomain(LookupDomain):
                 'track_name': track_name,
                 'description': description,
                 'artist_name': constraints['artist_name'],
-                'album_name': constraints['album_name'],
+                'album_name': constraints['album_name']
                 }
             elif type(response) == list:
                 if len(response) == 1:
@@ -78,6 +78,34 @@ class SongDomain(LookupDomain):
                         'album_name': constraints['album_name'],
                         }
                         result_list.append(result_dict)
+            elif type(response) == dict:
+                if len(response) == 1:
+                    track_name = response["tracks"]["items"][0]["name"]
+                    preview_url = response["tracks"]["items"][0]["preview_url"]
+                    result_dict = {
+                    'artificial_id': str(len(self.last_results)),
+                    'track_name': track_name,
+                    'preview_url': preview_url,
+                    'description': description,
+                    'artist_name': constraints['artist_name'],
+                    'album_name': constraints['album_name'],
+                    }
+                elif len(response) > 1:
+                    result_list = []
+                    for item in response:
+                        track_name = item["tracks"]["items"][0]["name"]
+                        preview_url = item["tracks"]["items"][0]["preview_url"]
+                        result_dict = {
+                        'artificial_id': str(len(self.last_results)),
+                        'track_name': track_name,
+                        'preview_url': preview_url,
+                        'description': description,
+                        'artist_name': constraints['artist_name'],
+                        'album_name': constraints['album_name'],
+                        }
+                        result_list.append(result_dict)
+
+
 
             if not result_list:
                     
@@ -97,15 +125,15 @@ class SongDomain(LookupDomain):
                         cleaned_result_dict = result_dict
                     cleaned_result_list.append(cleaned_result_dict)
                     self.last_results.append(cleaned_result_list)
-                print("returning list of results")
-                print(cleaned_result_list)
+                #####print("returning list of results")
+                #####print(cleaned_result_list)
                 return cleaned_result_list
         else:
             return []       
 
     def get_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the user. """
-        return ['track_name']
+        return ['track_name']                                                              ###here#####
 
     def get_system_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the system. """
@@ -164,11 +192,9 @@ class SongDomain(LookupDomain):
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
                 track_names_list = [track["name"] for track in results["tracks"]["items"]]
-                print("printing results of API call in domain.py")
-                print(f"resulting list of tracks: {track_names_list}")
-                #print(results["tracks"]["items"][0]["name"])
-                #return results["tracks"]["items"][0]["name"]
-                return track_names_list
+                #preview_url = results["tracks"]["items"][0]["preview_url"]
+                #####print("printing results of API call in domain.py")
+                return results
             except BaseException as e:
                 raise(e)
                 return None
@@ -177,7 +203,12 @@ class SongDomain(LookupDomain):
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
                 track_name = results["tracks"]["items"][0]["name"]
-                return track_name
+                preview_url = results["tracks"]["items"][0]["preview_url"]
+                # if preview_url == None:
+                #     return track_name, "The link for this song is not available"
+                # else:
+                #     return track_name, preview_url
+                return results
             except BaseException as e:
                 raise(e)
                 return None
@@ -188,7 +219,7 @@ class SongDomain(LookupDomain):
         market = "DE"
         query = f"artist:{artist_name}"
         results = self.spotify.search(query, market=market)
-        print(results)
+        #####print(results)
         pass
 
 

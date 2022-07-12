@@ -189,7 +189,7 @@ class BeliefState:
                 else:
                     # list
                     candidates[slot] = filtered_slot_cands
-        print(f"BST: Most probable values for system requestable slots (i.e. values that were informed by user): {candidates}")
+        #####print(f"BST: Most probable values for system requestable slots (i.e. values that were informed by user): {candidates}")
         return candidates
 
     def get_requested_slots(self, turn_idx: int = -1):
@@ -202,7 +202,7 @@ class BeliefState:
         candidates = []
         for req_slot in self._history[turn_idx]['requests']:
             candidates.append(req_slot)
-        print(f"Slots requested by the user: {candidates}")
+        #####print(f"Slots requested by the user: {candidates}")
         return candidates
 
     def _remove_dontcare_slots(self, slot_value_dict: dict):

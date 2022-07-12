@@ -166,7 +166,7 @@ class HandcraftedNLU(Service):
         self._assign_scores()
         self.logger.dialog_turn("User Actions: %s" % str(self.user_acts))
         result['user_acts'] = self.user_acts
-        print(f"User act: {result}")
+        #####print(f"User act: {result}")
         return result
 
     @PublishSubscribe(sub_topics=["sys_state"])
