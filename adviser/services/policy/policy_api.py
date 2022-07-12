@@ -369,6 +369,7 @@ class HandcraftedPolicy(Service):
             #####print(f"constraints: {constraints}")
             #####print(f"dontcare: {dontcare}")
             # Gather all the results for each column
+            print(q_res)
             temp = {key: [] for key in q_res[0].keys()}
             # If any column has multiple values, ask for clarification
             for result in q_res:

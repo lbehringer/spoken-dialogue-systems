@@ -37,6 +37,11 @@ template inform(track_name, artist_name)
 template inform_byname(track_name)
 	"There is a track called {track_name}. What do you want to know about it?"
 
+template inform_byname(preview_url)
+	"Click on {preview_url}"
+	special_case preview_url = "none"
+	    "I’m sorry, there is no preview available for this track."
+
 	#special_case artist_name = "none"
 	#	"I’m sorry, I could not find a matching artist."
 

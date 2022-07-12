@@ -18,6 +18,7 @@ function info(slot, value, track_name)
 	if slot = "album_name": "{track_name} was released on the following album: \"{value}\""
 	if slot = "track_name": "\"{value}\""
 	if slot = "artificial_id": "system inform articial id: \"{value}\""
+	if slot = "preview_url": "Click on {preview_url}"
 
 # -------------------------Only Name Slot-----------------------------------#
 
@@ -78,6 +79,10 @@ template inform_alternatives(name)
 	special_case name = "none"
 		"I'm sorry, I couldn't find another song with that name."
 
+template inform_byname(preview_url)
+	"Click on {preview_url}"
+	special_case preview_url = "none"
+	    "I’m sorry, there is no preview available for this track."
 
 #------------------------ Name Slot + Slots----------------------------------#
 

@@ -78,10 +78,11 @@ class SongDomain(LookupDomain):
                         'album_name': constraints['album_name'],
                         }
                         result_list.append(result_dict)
+
             elif type(response) == dict:
                 if len(response) == 1:
-                    track_name = response["tracks"]["items"][0]["name"]
-                    preview_url = response["tracks"]["items"][0]["preview_url"]
+                    track_name = response["name"]
+                    preview_url = response["preview_url"]
                     result_dict = {
                     'artificial_id': str(len(self.last_results)),
                     'track_name': track_name,
@@ -93,12 +94,12 @@ class SongDomain(LookupDomain):
                 elif len(response) > 1:
                     result_list = []
                     for item in response:
-                        track_name = item["tracks"]["items"][0]["name"]
-                        preview_url = item["tracks"]["items"][0]["preview_url"]
+                        track_name = item["name"]
+                        preview_url = item["preview_url"]
                         result_dict = {
                         'artificial_id': str(len(self.last_results)),
                         'track_name': track_name,
-                        'preview_url': preview_url,
+                        'preview_url': None,
                         'description': description,
                         'artist_name': constraints['artist_name'],
                         'album_name': constraints['album_name'],
@@ -149,7 +150,7 @@ class SongDomain(LookupDomain):
         
     def get_default_inform_slots(self) -> List[str]:
         """ Returns a list of all default Inform slots. """
-        return ['track_name']
+        return ['track_name', 'preview_url']
         #return []
 
     def get_possible_values(self, slot: str) -> List[str]:
@@ -191,10 +192,9 @@ class SongDomain(LookupDomain):
             query = f"artist:{artist_name}, album:{album_name}"
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
-                track_names_list = [track["name"] for track in results["tracks"]["items"]]
-                #preview_url = results["tracks"]["items"][0]["preview_url"]
+                results_list = [track for track in results["tracks"]["items"]]
                 #####print("printing results of API call in domain.py")
-                return results
+                return results_list
             except BaseException as e:
                 raise(e)
                 return None
@@ -202,13 +202,8 @@ class SongDomain(LookupDomain):
             query = f"artist:{artist_name}, album:{album_name}, track:{track_name}"
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
-                track_name = results["tracks"]["items"][0]["name"]
-                preview_url = results["tracks"]["items"][0]["preview_url"]
-                # if preview_url == None:
-                #     return track_name, "The link for this song is not available"
-                # else:
-                #     return track_name, preview_url
-                return results
+                result = results["tracks"]["items"][0]
+                return result
             except BaseException as e:
                 raise(e)
                 return None

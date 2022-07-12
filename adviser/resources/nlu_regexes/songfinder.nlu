@@ -83,6 +83,6 @@ function slot_synonyms(slot)
     if slot = "track_names_list"
         "tracks"
 
- #   if slot = "preview_url"
- #       "url"
+    if slot = "preview_url"
+        "preview"
 function IMPOSSIBLEREGEX(): "^\b$"
