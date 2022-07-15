@@ -162,9 +162,11 @@ class HandcraftedPolicy(Service):
         """
         # determine if an entity has already been suggested or was mentioned by the user
         name = self._get_name(beliefstate)
+        print(f"name: {name}")
         # if yes and the user is asking for info about a specific entity, generate a query to get
         # that info for the slots they have specified
         if name and beliefstate['requests']:
+            print(f"name and beliefstate['requests' exist: Printing beliefstate: {beliefstate}")
             requested_slots = beliefstate['requests']
             return self.domain.find_info_about_entity(name, requested_slots)
         # otherwise, issue a query to find all entities which satisfy the constraints the user
@@ -288,7 +290,7 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
-        #####print(f"Beliefstate passed to policy_api.py: {beliefstate}")
+        print(f"Beliefstate passed to policy_api.py: {beliefstate}")
         sys_state = {}
         # Assuming this happens only because domain is not actually active --LV
         """if UserActionType.Bad in beliefstate['user_acts'] or beliefstate['requests'] \
@@ -311,6 +313,7 @@ class HandcraftedPolicy(Service):
 
         elif self.domain.get_primary_key() in beliefstate['informs'] \
                 and not beliefstate['requests']:
+            print("primary_key is in beliefstate['informs'] and nothing is in beliefstate['requests']")
             sys_act = SysAct()
             sys_act.type = SysActionType.InformByName
             sys_act.add_value(self.domain.get_primary_key(), self._get_name(beliefstate))
@@ -369,7 +372,6 @@ class HandcraftedPolicy(Service):
             #####print(f"constraints: {constraints}")
             #####print(f"dontcare: {dontcare}")
             # Gather all the results for each column
-            print(q_res)
             temp = {key: [] for key in q_res[0].keys()}
             # If any column has multiple values, ask for clarification
             for result in q_res:
@@ -401,6 +403,12 @@ class HandcraftedPolicy(Service):
         # Otherwise action type will be inform, so return an empty inform (to be filled in later)
         sys_act.type = SysActionType.InformByName
         #####print("next sysact is inform")
+        # add preview_url to BST if it exists in single result
+        if "preview_url" in q_res[0].keys():
+            if q_res[0]["preview_url"]:
+                sys_act.add_value("preview_url", value = q_res[0]["preview_url"])
+                print("Sys act:")
+                print(sys_act)
         return sys_act
  
     #def _gen_next_select(self, temp: Dict[str, List[str]], belief_state: BeliefState):

@@ -51,7 +51,10 @@ template inform_byname(artificial_id)
 #template inform_byname(track_names_list, album_name, artist_name)
 #	"The album {album_name} by the artist {artist_name} contains the following tracks: {track_names_list}. Which track are you interested in?"
 
-template inform_byname(artificial_id, track_name, album_name, artist_name)
+template inform_byname(artificial_id, preview_url)
+	"Please click on this preview url: {preview_url}"
+
+template inform_byname(artificial_id, track_name, album_name, artist_name, *slots)
 	"There is a track called {track_name} by the artist {artist_name} on {album_name}. What do you want to know about it?"
 
 template inform_byname(artificial_id, *slots)

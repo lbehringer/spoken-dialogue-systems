@@ -48,7 +48,7 @@ rule request(track_name)
     "what is their {slot_synonyms("track_name")}"
 
 rule request(preview_url)
-    "what is their {slot_synonyms("preview_url")}"
+    "play a {slot_synonyms("preview_url")}"
 
 # Select one of several options
 
@@ -85,4 +85,5 @@ function slot_synonyms(slot)
 
     if slot = "preview_url"
         "preview"
+        
 function IMPOSSIBLEREGEX(): "^\b$"

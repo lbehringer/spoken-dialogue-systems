@@ -51,7 +51,7 @@ class SongDomain(LookupDomain):
             if type(response) == str:
                 track_name = response
                 result_dict = {
-                'artificial_id': str(len(self.last_results)),
+                'artificial_id': 1,
                 'track_name': track_name,
                 'description': description,
                 'artist_name': constraints['artist_name'],
@@ -59,32 +59,10 @@ class SongDomain(LookupDomain):
                 }
             elif type(response) == list:
                 if len(response) == 1:
-                    track_name = response[0]
+                    track_name = response[0]["name"]
+                    preview_url = response[0]["preview_url"]
                     result_dict = {
-                    'artificial_id': str(len(self.last_results)),
-                    'track_name': track_name,
-                    'description': description,
-                    'artist_name': constraints['artist_name'],
-                    'album_name': constraints['album_name'],
-                    }
-                elif len(response) > 1:
-                    result_list = []
-                    for track_name in response:
-                        result_dict = {
-                        'artificial_id': str(len(self.last_results)),
-                        'track_name': track_name,
-                        'description': description,
-                        'artist_name': constraints['artist_name'],
-                        'album_name': constraints['album_name'],
-                        }
-                        result_list.append(result_dict)
-
-            elif type(response) == dict:
-                if len(response) == 1:
-                    track_name = response["name"]
-                    preview_url = response["preview_url"]
-                    result_dict = {
-                    'artificial_id': str(len(self.last_results)),
+                    'artificial_id': 1,
                     'track_name': track_name,
                     'preview_url': preview_url,
                     'description': description,
@@ -93,20 +71,30 @@ class SongDomain(LookupDomain):
                     }
                 elif len(response) > 1:
                     result_list = []
-                    for item in response:
-                        track_name = item["name"]
-                        preview_url = item["preview_url"]
+                    for i, track in enumerate(response):
+                        track_name = track["name"]
+                        preview_url = track["preview_url"]
                         result_dict = {
-                        'artificial_id': str(len(self.last_results)),
+                        'artificial_id': i+1,
                         'track_name': track_name,
-                        'preview_url': None,
+                        'preview_url': preview_url,
                         'description': description,
                         'artist_name': constraints['artist_name'],
                         'album_name': constraints['album_name'],
                         }
                         result_list.append(result_dict)
 
-
+            elif type(response) == dict:
+                track_name = response["name"]
+                preview_url = response["preview_url"]
+                result_dict = {
+                'artificial_id': str(len(self.last_results)),
+                'track_name': track_name,
+                'preview_url': preview_url,
+                'description': description,
+                'artist_name': constraints['artist_name'],
+                'album_name': constraints['album_name'],
+                }
 
             if not result_list:
                     
@@ -132,9 +120,21 @@ class SongDomain(LookupDomain):
         else:
             return []       
 
+    def find_info_about_entity(self, entity_id, requested_slots: Iterable):
+            """ Returns the values (stored in the data backend) of the specified slots for the
+                specified entity.
+            Args:
+                entity_id (str): primary key value of the entity
+                requested_slots (dict): slot-value mapping of constraints
+            """
+            print(f"requested_slots: {requested_slots}")
+            print(f"last_results: {self.last_results}")
+            return [self.last_results[int(entity_id)]]
+
+
     def get_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the user. """
-        return ['track_name']                                                              ###here#####
+        return ['track_name', 'preview_url']                                                              ###here#####
 
     def get_system_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the system. """

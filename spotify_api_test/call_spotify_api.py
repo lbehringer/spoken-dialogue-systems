@@ -26,11 +26,11 @@ q = f"artist:{artist_name}, album:{album_name}, track:{track_name}"
 # specify market region (country code)
 market = "DE"
 results = spotify.search(q, market=market, type=type)
-print(results)
+#print(results)
 for key in results.keys():
     print(key)
     for item in results[key]["items"]:
-        #print(item)
+        print(item.keys())
         name = item["name"]
         pop = item["popularity"]
         print(f"Band: {name}, popularity: {pop}")
