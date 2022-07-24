@@ -38,6 +38,7 @@ class SongDomain(LookupDomain):
                                         system requestable slots and the primary key
                         
         """
+        print(f"last_results: {self.last_results}")
         if 'artist_name' in constraints and 'album_name' in constraints:
 
             if 'track_name' in constraints:
@@ -113,7 +114,7 @@ class SongDomain(LookupDomain):
                     else:
                         cleaned_result_dict = result_dict
                     cleaned_result_list.append(cleaned_result_dict)
-                    self.last_results.append(cleaned_result_list)
+                self.last_results = cleaned_result_list
                 #####print("returning list of results")
                 #####print(cleaned_result_list)
                 return cleaned_result_list
