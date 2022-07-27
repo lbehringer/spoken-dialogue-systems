@@ -49,24 +49,31 @@ class SongDomain(LookupDomain):
                 return []
             description = "description_placeholder"
             result_list = []
-            if type(response) == str:
-                track_name = response
-                result_dict = {
-                'artificial_id': 1,
-                'track_name': track_name,
-                'description': description,
-                'artist_name': constraints['artist_name'],
-                'album_name': constraints['album_name']
-                }
-            elif type(response) == list:
+            # if type(response) == str:
+            #     track_name = response
+            #     track_id = track["id"]                
+            #     result_dict = {
+            #     'artificial_id': track_id,
+            #     'track_name': track_name,
+            #     'description': description,
+            #     'artist_name': constraints['artist_name'],
+            #     'album_name': constraints['album_name']
+            #     }
+            if type(response) == list:
                 if len(response) == 1:
                     track_name = response[0]["name"]
+                    instrumentalness = response[0]["audio_features"]["instrumentalness"]
+                    danceability = response[0]["audio_features"]["danceability"]
                     preview_url = response[0]["preview_url"]
+                    if not preview_url:
+                        preview_url = "none"
+                    track_id = response[0]["id"]
                     result_dict = {
-                    'artificial_id': 1,
+                    'artificial_id': track_id,
                     'track_name': track_name,
                     'preview_url': preview_url,
-                    'description': description,
+                    'instrumentalness': instrumentalness,
+                    'danceability': danceability,
                     'artist_name': constraints['artist_name'],
                     'album_name': constraints['album_name'],
                     }
@@ -74,12 +81,18 @@ class SongDomain(LookupDomain):
                     result_list = []
                     for i, track in enumerate(response):
                         track_name = track["name"]
+                        instrumentalness = track["audio_features"]["instrumentalness"]
+                        danceability = track["audio_features"]["danceability"]
                         preview_url = track["preview_url"]
+                        if not preview_url:
+                            preview_url = "none"                        
+                        track_id = track["id"]
                         result_dict = {
-                        'artificial_id': i+1,
+                        'artificial_id': track_id,
                         'track_name': track_name,
                         'preview_url': preview_url,
-                        'description': description,
+                        'instrumentalness': instrumentalness,
+                        'danceability': danceability,
                         'artist_name': constraints['artist_name'],
                         'album_name': constraints['album_name'],
                         }
@@ -87,12 +100,18 @@ class SongDomain(LookupDomain):
 
             elif type(response) == dict:
                 track_name = response["name"]
+                instrumentalness = response["audio_features"]["instrumentalness"]
+                danceability = response["audio_features"]["danceability"]
                 preview_url = response["preview_url"]
+                if not preview_url:
+                    preview_url = "none"
+                track_id = response["id"]                
                 result_dict = {
-                'artificial_id': str(len(self.last_results)),
+                'artificial_id': track_id,
                 'track_name': track_name,
                 'preview_url': preview_url,
-                'description': description,
+                'instrumentalness': instrumentalness,
+                'danceability': danceability,
                 'artist_name': constraints['artist_name'],
                 'album_name': constraints['album_name'],
                 }
@@ -130,12 +149,14 @@ class SongDomain(LookupDomain):
             """
             print(f"requested_slots: {requested_slots}")
             print(f"last_results: {self.last_results}")
-            return [self.last_results[int(entity_id)]]
+            for result in self.last_results:
+                if result["artificial_id"] == entity_id:
+                    return [result]
 
 
     def get_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the user. """
-        return ['track_name', 'preview_url']                                                              ###here#####
+        return ['track_name', 'preview_url', 'instrumentalness', 'danceability']                                                              ###here#####
 
     def get_system_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the system. """
@@ -194,7 +215,11 @@ class SongDomain(LookupDomain):
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
                 results_list = [track for track in results["tracks"]["items"]]
-                #####print("printing results of API call in domain.py")
+                track_id_list = [track["id"] for track in results_list]
+                features_list = self.spotify.audio_features(track_id_list)
+                for idx, features in enumerate(features_list):
+                    results_list[idx]["audio_features"] = features
+                print(results_list)
                 return results_list
             except BaseException as e:
                 raise(e)
@@ -204,7 +229,11 @@ class SongDomain(LookupDomain):
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
                 result = results["tracks"]["items"][0]
-                return result
+                track_id_list = [result["id"]]
+                features_list = self.spotify.audio_features(track_id_list)
+                result["audio_features"] = features_list[0]
+                print(result)
+                return [result]
             except BaseException as e:
                 raise(e)
                 return None

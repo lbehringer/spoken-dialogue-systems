@@ -164,7 +164,7 @@ class HandcraftedBST(Service):
                 else:
                     self.bs['informs'][act.slot] = {act.value: act.score}
             elif act.type == UserActionType.SelectOption:
-                # Select is similar to an inform but overwrites previous a previous list entry with a string
+                # Select is similar to an inform but overwrites a previous list entry with a string
                 self.bs['informs'][act.slot] = {act.value: act.score}
             elif act.type == UserActionType.NegativeInform:
                 # reset mentioned value to zero probability

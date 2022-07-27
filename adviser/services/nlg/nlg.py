@@ -21,6 +21,7 @@
 
 import inspect
 import os
+from utils.sysact import SysActionType
 
 from services.nlg.templates.templatefile import TemplateFile
 from services.service import PublishSubscribe
@@ -78,6 +79,8 @@ class HandcraftedNLG(Service):
         Returns:
             dict: a dict containing the system utterance
         """
+        print("Generating system utterance in nlg.py:")
+        print(self.generate_system_utterance((sys_act)))
         return {'sys_utterance': self.generate_system_utterance(sys_act)}
 
 
@@ -109,7 +112,6 @@ class HandcraftedNLG(Service):
                              + " - Slots: " + str(sys_act.slot_values))
 
         # self.logger.dialog_turn("System Action: " + message)
-        print("System act in nlg.py: " + str(sys_act))
         #####print("System act type: " + str(sys_act.type))
         return message
 

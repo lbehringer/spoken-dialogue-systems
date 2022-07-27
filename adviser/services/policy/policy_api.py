@@ -53,6 +53,7 @@ class HandcraftedPolicy(Service):
         self.s_index = 0  # the index in current suggestions for the current system reccomendation
         self.domain_key = domain.get_primary_key()
         self.logger = logger
+        self.memory = [] # list that is populated with all previously retrieved information (each entry is a dict)
 
     @PublishSubscribe(sub_topics=["beliefstate"], pub_topics=["sys_act", "sys_state"])
     def choose_sys_act(self, beliefstate: BeliefState = None, sys_act: SysAct = None)\
@@ -150,6 +151,8 @@ class HandcraftedPolicy(Service):
                 act_types_lst.remove(UserActionType.Hello)
             else:
                 break
+    
+
 
     def _query_db(self, beliefstate: BeliefState):
         """Based on the constraints specified, uses self.domain to generate the appropriate type
@@ -160,9 +163,29 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
+
+        # def __query_memory(self, beliefstate: BeliefState):
+        #     """Based on the constraints specified, use self.domain to generate the appropriate type
+        #     of query in the memory (i.e. already retrieved from API)
+            
+        #     Returns:
+        #         iterable: representing the results of the memory lookup
+        #     """
+        #     # determine if an entity has already been suggested or was mentioned by the user
+        #     memory = self.memory
+        #     name = self._get_name(beliefstate)
+        #     # if yes and the user is asking for info about a specific entity, generate a query to get
+        #     # that info for the slots they have specified        
+        #     if name and beliefstate['requests']:
+        #         requested_slots = beliefstate['requests']
+        #         return self.domain.find_info_about_entity(name, requested_slots)
+
+        # # if info is already available in memory, return that
+        # if self.__query_memory(beliefstate):
+        #     return self.__query_memory(beliefstate)
         # determine if an entity has already been suggested or was mentioned by the user
         name = self._get_name(beliefstate)
-        print(f"name: {name}")
+        print(f"name (if an entity has already been suggested or was mentioned by user): {name}")
         # if yes and the user is asking for info about a specific entity, generate a query to get
         # that info for the slots they have specified
         if name and beliefstate['requests']:
@@ -195,8 +218,12 @@ class HandcraftedPolicy(Service):
             name = sorted(possible_names.items(), key=lambda kv: kv[1], reverse=True)[0][0]
         # if the user is trying to query by name
         else:
+            print(f"self.s_index: {self.s_index}")
+            print(f"self.current_suggestions: {self.current_suggestions}")
             if self.s_index < len(self.current_suggestions):
+                print(f"self.current_suggestions: {self.current_suggestions}")
                 current_suggestion = self.current_suggestions[self.s_index]
+                print(f"current_suggestion: {current_suggestion}")
                 if current_suggestion:
                     name = current_suggestion[self.domain_key]
         return name
@@ -321,6 +348,36 @@ class HandcraftedPolicy(Service):
 
         # Otherwise we need to query the db to determine next action
         results = self._query_db(beliefstate)
+        # if memory is empty, populate it (after first API request)
+        #####print(f"RESULTS: {results}")
+        #####print(f"MEMORY: {self.memory}")
+        if not self.memory:
+            self.memory = results
+        # else update memory with new entries (after subsequent API requests)
+        else:
+            temp_memory = self.memory
+            artificial_ids = []
+            self.memory = []
+            cleaned_results = []
+            # remove entries without key "artificial_id"
+            for memory_entry in temp_memory:
+                if not memory_entry["artificial_id"]:
+                    continue
+                if memory_entry["artificial_id"] in artificial_ids:
+                    continue
+                self.memory.append((memory_entry))
+                artificial_ids.append(memory_entry["artificial_id"])
+
+            # remove entries without key "artificial_id"
+            for result in results:
+                if result["artificial_id"]:
+                    cleaned_results.append(result)
+            # append results which were not in memory before
+            for result in cleaned_results:
+                if result["artificial_id"] not in artificial_ids:
+                    self.memory.append(result)
+            #####print(f"UPDATED MEMORY: {self.memory}")
+
         sys_act = self._raw_action(results, beliefstate)
         #####print(f"sys_act in policy_api.py: {sys_act}")
         # requests are fairly easy, if it's a request, return it directly
@@ -330,7 +387,7 @@ class HandcraftedPolicy(Service):
                 sys_state['lastRequestSlot'] = list(sys_act.slot_values.keys())[0]
                 # belief_state['system']['lastRequestSlot'] = list(sys_act.slot_values.keys())[0]
 
-        # otherwise we need to convert a raw inform into a one with proper slots and values
+        # otherwise we need to convert a raw inform into one with proper slots and values
         elif sys_act.type == SysActionType.InformByName:
             self._convert_inform(results, sys_act, beliefstate)
             # update belief state to reflect the offer we just made
@@ -404,11 +461,11 @@ class HandcraftedPolicy(Service):
         sys_act.type = SysActionType.InformByName
         #####print("next sysact is inform")
         # add preview_url to BST if it exists in single result
-        if "preview_url" in q_res[0].keys():
-            if q_res[0]["preview_url"]:
-                sys_act.add_value("preview_url", value = q_res[0]["preview_url"])
-                print("Sys act:")
-                print(sys_act)
+        # if "preview_url" in q_res[0].keys():
+        #     if q_res[0]["preview_url"]:
+        #         sys_act.add_value("preview_url", value = q_res[0]["preview_url"])
+        #         print("Sys act (this should add preview_url to BST):")
+        #         print(sys_act)
         return sys_act
  
     #def _gen_next_select(self, temp: Dict[str, List[str]], belief_state: BeliefState):
@@ -586,16 +643,20 @@ class HandcraftedPolicy(Service):
                 belief_state (BeliefState): the current system beliefs
 
         """
+        print("called _convert_inform_by_constraints")
         if list(q_results):
+            print(f"list(q_results): {q_results}")
             self.current_suggestions = []
             self.s_index = 0
             for result in q_results:
                 self.current_suggestions.append(result)
+            print(f"self.current_suggestions after appending q_results: {self.current_suggestions}")
             result = self.current_suggestions[0]
-            ##### THE NEXT LINE IS RESPONSIBLE FOR THE DOUBLE ENTRY
             sys_act.add_value(self.domain_key, result[self.domain_key])
             #####print(sys_act.slot_values)
             # Add default Inform slots
+            print(f"default inform slots: {self.domain.get_default_inform_slots()}")
+            print(f"sys_act.slot_values: {sys_act.slot_values}")
             for slot in self.domain.get_default_inform_slots():
                 if slot not in sys_act.slot_values:
                     sys_act.add_value(slot, result[slot])
@@ -610,6 +671,14 @@ class HandcraftedPolicy(Service):
             sys_act.add_value(c, constraints[c])
 
         if self.current_suggestions:
+            print(belief_state["user_acts"])
+            if UserActionType.Request in belief_state["user_acts"]:
+                # delete previously stored slot values from sys_act
+                print("deleting previously stored slot values from sys_act.")
+                sys_act.slot_values = {}
+                print(f"belief_state: {belief_state}")
             for slot in belief_state['requests']:
                 if slot not in sys_act.slot_values:
                     sys_act.add_value(slot, self.current_suggestions[0][slot])
+            if UserActionType.Request in belief_state["user_acts"]:
+                print(f"sys_act.slot_values should now only contain the requested slot: {sys_act.slot_values}")
