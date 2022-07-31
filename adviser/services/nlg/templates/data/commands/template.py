@@ -82,13 +82,14 @@ class Template(Command):
 
     def apply(self, parameters: Memory = None) -> str:
         slot_dict = parameters.variable_dict.copy()
+        #####print(f"slot_dict: {slot_dict}")
+        #####print(f"self.free_parameter: {self.free_parameter}")
         if self.free_parameter is not None:
             variables = self._build_memory_with_free_parameter(slot_dict,
                                                                parameters.global_memory)
         else:
             variables = self._build_memory_without_free_parameter(slot_dict,
                                                                   parameters.global_memory)
-
         special_case = self._get_applicable_special_case(variables)
         if special_case is not None:
             return special_case.apply(variables)
@@ -106,6 +107,8 @@ class Template(Command):
 
     def _build_memory_with_free_parameter(self, slot_dict: Dict[str, object],
                                           global_memory: GlobalMemory) -> Memory:
+        #####print(f"self.slot_names: {self.slot_names}")
+        #####print(f"slot_dict: {slot_dict}")
         variables = Memory(global_memory)
         for slot in self.slot_names:
             value = self._flatten_value_list(slot_dict[slot])
@@ -116,6 +119,8 @@ class Template(Command):
         for slot in slot_dict:
             value = self._flatten_value_list(slot_dict[slot])
             slot_value_pairs.append((slot, value))
+            #####print(f"slot: {slot}")
+            #####print(f"value: {value}")
         variables.add_variable(Variable(self.free_parameter, slot_value_pairs))
 
         return variables

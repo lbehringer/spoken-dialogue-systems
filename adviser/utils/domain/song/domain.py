@@ -38,7 +38,7 @@ class SongDomain(LookupDomain):
                                         system requestable slots and the primary key
                         
         """
-        print(f"last_results: {self.last_results}")
+        #####print(f"last_results: {self.last_results}")
         if 'artist_name' in constraints and 'album_name' in constraints:
 
             if 'track_name' in constraints:
@@ -64,6 +64,7 @@ class SongDomain(LookupDomain):
                     track_name = response[0]["name"]
                     instrumentalness = response[0]["audio_features"]["instrumentalness"]
                     danceability = response[0]["audio_features"]["danceability"]
+                    valence = response[0]["audio_features"]["valence"]
                     preview_url = response[0]["preview_url"]
                     if not preview_url:
                         preview_url = "none"
@@ -74,6 +75,7 @@ class SongDomain(LookupDomain):
                     'preview_url': preview_url,
                     'instrumentalness': instrumentalness,
                     'danceability': danceability,
+                    'valence': valence,
                     'artist_name': constraints['artist_name'],
                     'album_name': constraints['album_name'],
                     }
@@ -83,6 +85,7 @@ class SongDomain(LookupDomain):
                         track_name = track["name"]
                         instrumentalness = track["audio_features"]["instrumentalness"]
                         danceability = track["audio_features"]["danceability"]
+                        valence = track["audio_features"]["valence"]
                         preview_url = track["preview_url"]
                         if not preview_url:
                             preview_url = "none"                        
@@ -93,6 +96,7 @@ class SongDomain(LookupDomain):
                         'preview_url': preview_url,
                         'instrumentalness': instrumentalness,
                         'danceability': danceability,
+                        'valence': valence,
                         'artist_name': constraints['artist_name'],
                         'album_name': constraints['album_name'],
                         }
@@ -102,6 +106,7 @@ class SongDomain(LookupDomain):
                 track_name = response["name"]
                 instrumentalness = response["audio_features"]["instrumentalness"]
                 danceability = response["audio_features"]["danceability"]
+                valence = response["audio_features"]["valence"]
                 preview_url = response["preview_url"]
                 if not preview_url:
                     preview_url = "none"
@@ -112,6 +117,7 @@ class SongDomain(LookupDomain):
                 'preview_url': preview_url,
                 'instrumentalness': instrumentalness,
                 'danceability': danceability,
+                'valence': valence,
                 'artist_name': constraints['artist_name'],
                 'album_name': constraints['album_name'],
                 }
@@ -156,7 +162,7 @@ class SongDomain(LookupDomain):
 
     def get_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the user. """
-        return ['track_name', 'preview_url', 'instrumentalness', 'danceability']                                                              ###here#####
+        return ['track_name', 'preview_url', 'danceability']                                                              ###here#####
 
     def get_system_requestable_slots(self) -> List[str]:
         """ Returns a list of all slots requestable by the system. """
@@ -172,7 +178,7 @@ class SongDomain(LookupDomain):
         
     def get_default_inform_slots(self) -> List[str]:
         """ Returns a list of all default Inform slots. """
-        return ['track_name', 'preview_url']
+        return ['track_name', 'preview_url', 'danceability']
         #return []
 
     def get_possible_values(self, slot: str) -> List[str]:
@@ -188,16 +194,21 @@ class SongDomain(LookupDomain):
         raise BaseException('all slots in this domain do not have a fixed set of '
                             'values, so this method should never be called')
 
-    def get_selectable_values(self, slot: str) -> List[str]:
-        """ Returns all selectable values for a requestable slot with several values
-        
+    def get_selectable_slots(self, result: dict) -> List[str]:
+        """ Returns all selectable slots in a result
+
         Args:
-            slot (str): name of the slot
+            result (dict): dictionary containing several slots (i.e. keys)
         
         Returns: 
-            a list of strings, each string representing one selectable value for
-            the specified slot.
+            a list of strings, each string representing one slot that can be used for 
+            selecting a subset of a set of options.
         """
+        blacklist = ["preview_url", "artificial_id", "album_name", "artist_name", "track_name"]
+        selectable_slots = [key for key in result.keys() if key not in blacklist]
+        #####print(f"selectable_slots: {selectable_slots}")
+        return selectable_slots
+
 
     def get_primary_key(self) -> str:
         """ Returns the slot name that will be used as the 'name' of an entry """
@@ -219,7 +230,6 @@ class SongDomain(LookupDomain):
                 features_list = self.spotify.audio_features(track_id_list)
                 for idx, features in enumerate(features_list):
                     results_list[idx]["audio_features"] = features
-                print(results_list)
                 return results_list
             except BaseException as e:
                 raise(e)
@@ -232,7 +242,6 @@ class SongDomain(LookupDomain):
                 track_id_list = [result["id"]]
                 features_list = self.spotify.audio_features(track_id_list)
                 result["audio_features"] = features_list[0]
-                print(result)
                 return [result]
             except BaseException as e:
                 raise(e)

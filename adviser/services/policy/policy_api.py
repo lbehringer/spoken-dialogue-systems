@@ -163,33 +163,31 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
+        # retrieve from memory if possible
+        if self.memory:
+            memory_results = []
+            constraints, _ = self._get_constraints(beliefstate)
+            for memory_entry in self.memory:
+                memory_results.append(memory_entry)
+                for constraint in constraints:
+                    if not memory_entry[constraint]:
+                        del memory_results[-1]
+                        break
+                    else:
+                        if not memory_entry[constraint] == constraints[constraint]:
+                            del memory_results[-1]
+                            break
+            if memory_results:
+                #####print("RETURNING ENTRY FROM MEMORY")
+                return memory_results
 
-        # def __query_memory(self, beliefstate: BeliefState):
-        #     """Based on the constraints specified, use self.domain to generate the appropriate type
-        #     of query in the memory (i.e. already retrieved from API)
-            
-        #     Returns:
-        #         iterable: representing the results of the memory lookup
-        #     """
-        #     # determine if an entity has already been suggested or was mentioned by the user
-        #     memory = self.memory
-        #     name = self._get_name(beliefstate)
-        #     # if yes and the user is asking for info about a specific entity, generate a query to get
-        #     # that info for the slots they have specified        
-        #     if name and beliefstate['requests']:
-        #         requested_slots = beliefstate['requests']
-        #         return self.domain.find_info_about_entity(name, requested_slots)
-
-        # # if info is already available in memory, return that
-        # if self.__query_memory(beliefstate):
-        #     return self.__query_memory(beliefstate)
         # determine if an entity has already been suggested or was mentioned by the user
         name = self._get_name(beliefstate)
-        print(f"name (if an entity has already been suggested or was mentioned by user): {name}")
+        #####print(f"name (if an entity has already been suggested or was mentioned by user): {name}")
         # if yes and the user is asking for info about a specific entity, generate a query to get
         # that info for the slots they have specified
         if name and beliefstate['requests']:
-            print(f"name and beliefstate['requests' exist: Printing beliefstate: {beliefstate}")
+            #####print(f"name and beliefstate['requests' exist: Printing beliefstate: {beliefstate}")
             requested_slots = beliefstate['requests']
             return self.domain.find_info_about_entity(name, requested_slots)
         # otherwise, issue a query to find all entities which satisfy the constraints the user
@@ -218,12 +216,11 @@ class HandcraftedPolicy(Service):
             name = sorted(possible_names.items(), key=lambda kv: kv[1], reverse=True)[0][0]
         # if the user is trying to query by name
         else:
-            print(f"self.s_index: {self.s_index}")
-            print(f"self.current_suggestions: {self.current_suggestions}")
+            #####print(f"self.s_index: {self.s_index}")
+            ######print(f"self.current_suggestions: {self.current_suggestions}")
             if self.s_index < len(self.current_suggestions):
-                print(f"self.current_suggestions: {self.current_suggestions}")
                 current_suggestion = self.current_suggestions[self.s_index]
-                print(f"current_suggestion: {current_suggestion}")
+                #####print(f"current_suggestion: {current_suggestion}")
                 if current_suggestion:
                     name = current_suggestion[self.domain_key]
         return name
@@ -340,7 +337,7 @@ class HandcraftedPolicy(Service):
 
         elif self.domain.get_primary_key() in beliefstate['informs'] \
                 and not beliefstate['requests']:
-            print("primary_key is in beliefstate['informs'] and nothing is in beliefstate['requests']")
+            #####print("primary_key is in beliefstate['informs'] and nothing is in beliefstate['requests']")
             sys_act = SysAct()
             sys_act.type = SysActionType.InformByName
             sys_act.add_value(self.domain.get_primary_key(), self._get_name(beliefstate))
@@ -383,7 +380,7 @@ class HandcraftedPolicy(Service):
         # requests are fairly easy, if it's a request, return it directly
         if sys_act.type == SysActionType.Request:
             if len(list(sys_act.slot_values.keys())) > 0:
-                # update the belief state to reflec the slot we just asked about
+                # update the belief state to reflect the slot we just asked about
                 sys_state['lastRequestSlot'] = list(sys_act.slot_values.keys())[0]
                 # belief_state['system']['lastRequestSlot'] = list(sys_act.slot_values.keys())[0]
 
@@ -396,11 +393,12 @@ class HandcraftedPolicy(Service):
             if values:
                 # belief_state['system']['lastInformedPrimKeyVal'] = values[0]
                 sys_state['lastInformedPrimKeyVal'] = values[0]
+                pass
             else:
                 sys_act.add_value(self.domain.get_primary_key(), 'none')
 
         sys_state['last_act'] = sys_act
-        #####print(f"sys_state in policy_api.py{sys_state}")
+        print(f"sys_state in policy_api.py{sys_state}")
         #####print(type(sys_state["last_act"]))
         #####print(sys_state["last_act"].type)
         #####print(sys_state["last_act"].slot_values)
@@ -424,12 +422,21 @@ class HandcraftedPolicy(Service):
         sys_act = SysAct()
         # if there is more than one result
         if len(q_res) > 1:
+            # if user requested max danceability, instrumentalness or valence
+            if UserActionType.Request in beliefstate["user_acts"]:
+                selectable_slots = self.domain.get_selectable_slots(q_res[0])
+                for selectable_slot in selectable_slots:
+                    if selectable_slot in beliefstate["requests"]:
+                        sys_act.type = SysActionType.InformByName
+                        return sys_act
+
             #####print("raw_action received result list of length >1")
             constraints, dontcare = self._get_constraints(beliefstate)
             #####print(f"constraints: {constraints}")
             #####print(f"dontcare: {dontcare}")
             # Gather all the results for each column
             temp = {key: [] for key in q_res[0].keys()}
+
             # If any column has multiple values, ask for clarification
             for result in q_res:
                 for key in result.keys():
@@ -447,6 +454,9 @@ class HandcraftedPolicy(Service):
             #next_sel = self._gen_next_select(max_len_key, beliefstate)
             sys_act.type = SysActionType.Select
             sys_act.add_value(max_len_key, value = temp[max_len_key])
+            for selectable_slot in self.domain.get_selectable_slots(q_res[0]):
+                sys_act.add_value(selectable_slot, value="none")
+            print(f"sys_act after adding selectable slots: {sys_act}")
             return sys_act
 
             # next_req = self._gen_next_request(temp, beliefstate)
@@ -460,12 +470,6 @@ class HandcraftedPolicy(Service):
         # Otherwise action type will be inform, so return an empty inform (to be filled in later)
         sys_act.type = SysActionType.InformByName
         #####print("next sysact is inform")
-        # add preview_url to BST if it exists in single result
-        # if "preview_url" in q_res[0].keys():
-        #     if q_res[0]["preview_url"]:
-        #         sys_act.add_value("preview_url", value = q_res[0]["preview_url"])
-        #         print("Sys act (this should add preview_url to BST):")
-        #         print(sys_act)
         return sys_act
  
     #def _gen_next_select(self, temp: Dict[str, List[str]], belief_state: BeliefState):
@@ -643,20 +647,21 @@ class HandcraftedPolicy(Service):
                 belief_state (BeliefState): the current system beliefs
 
         """
-        print("called _convert_inform_by_constraints")
+        #####print("CALLING _convert_inform_by_constraints")
         if list(q_results):
-            print(f"list(q_results): {q_results}")
+            #####print(f"list(q_results): {q_results}")
             self.current_suggestions = []
             self.s_index = 0
             for result in q_results:
                 self.current_suggestions.append(result)
-            print(f"self.current_suggestions after appending q_results: {self.current_suggestions}")
+            #####print(f"self.current_suggestions after appending q_results: {self.current_suggestions}")
             result = self.current_suggestions[0]
+            #####print(f"RESULT: {result}")
             sys_act.add_value(self.domain_key, result[self.domain_key])
             #####print(sys_act.slot_values)
             # Add default Inform slots
-            print(f"default inform slots: {self.domain.get_default_inform_slots()}")
-            print(f"sys_act.slot_values: {sys_act.slot_values}")
+            #####print(f"default inform slots: {self.domain.get_default_inform_slots()}")
+            #####print(f"sys_act.slot_values: {sys_act.slot_values}")
             for slot in self.domain.get_default_inform_slots():
                 if slot not in sys_act.slot_values:
                     sys_act.add_value(slot, result[slot])
@@ -671,14 +676,53 @@ class HandcraftedPolicy(Service):
             sys_act.add_value(c, constraints[c])
 
         if self.current_suggestions:
-            print(belief_state["user_acts"])
+            #####print(belief_state["user_acts"])
             if UserActionType.Request in belief_state["user_acts"]:
                 # delete previously stored slot values from sys_act
-                print("deleting previously stored slot values from sys_act.")
+                #####print("USER REQUEST RECOGNIZED. DELETING PREVIOUSLY STORED SLOT VALUES FROM sys_act.")
                 sys_act.slot_values = {}
-                print(f"belief_state: {belief_state}")
-            for slot in belief_state['requests']:
+                #####print(f"belief_state: {belief_state}")
+
+                selectable_slots = self.domain.get_selectable_slots(q_results[0])
+                requested_slot = ""
+                for slot in belief_state['requests']:
+                    for selectable_slot in selectable_slots:
+                        if slot == selectable_slot:
+                            requested_slot = selectable_slot
+                            break
+                    if requested_slot:
+                        # add most track with max value to sys_act
+                        result = self.get_max_value_candidate(requested_slot)
+                        sys_act.type = SysActionType.InformByName 
+                        sys_act.add_value(requested_slot, value=result[requested_slot])
+                        sys_act.add_value("artificial_id", value=result["artificial_id"])
+                        sys_act.add_value("track_name", value=result["track_name"])
+                    
                 if slot not in sys_act.slot_values:
+                    #####print(f"self.current_suggestions: {self.current_suggestions}")
+                    #####print(f"ADDING {self.current_suggestions[0][slot]}")
                     sys_act.add_value(slot, self.current_suggestions[0][slot])
             if UserActionType.Request in belief_state["user_acts"]:
                 print(f"sys_act.slot_values should now only contain the requested slot: {sys_act.slot_values}")
+
+    def get_max_value_candidate(self, slot: str):
+        """
+            Iterates over all candidates in self.memory w.r.t. the passed slot and returns the
+            candidate with the highest value for this slot
+
+            Args: 
+                slot (str)
+                memory (list)
+
+            Returns: 
+                candidate (dict)
+        """
+        max_value = 0
+        max_entry = {}
+        for memory_entry in self.memory:
+            if memory_entry[slot]:
+                if memory_entry[slot] > max_value:
+                    max_value = memory_entry[slot]
+                    max_entry = memory_entry
+        #####print(f"RETURNING MAX_VALUE_CANDIDATE: {max_entry}")
+        return max_entry

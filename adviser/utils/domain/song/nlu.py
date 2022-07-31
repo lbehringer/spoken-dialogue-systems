@@ -120,12 +120,14 @@ class SongNLU(HandcraftedNLU):
 
     @PublishSubscribe(sub_topics=["sys_state"])
     def _update_sys_act_info(self, sys_state):
+        print("CALLING _UPDATE_SYS_ACT_INFO")
         if "lastInformedPrimKeyVal" in sys_state:
             self.sys_act_info['last_offer'] = sys_state['lastInformedPrimKeyVal']
         if "lastRequestSlot" in sys_state:
             self.sys_act_info['last_request'] = sys_state['lastRequestSlot']
         if "last_act" in sys_state:
             self.sys_act_info['last_act'] = sys_state['last_act']
+            print(f"UPDATING LAST_ACT: {self.sys_act_info['last_act']}")
 
 
     def _match_general_act(self, user_utterance: str):

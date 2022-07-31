@@ -79,8 +79,8 @@ class HandcraftedNLG(Service):
         Returns:
             dict: a dict containing the system utterance
         """
-        print("Generating system utterance in nlg.py:")
-        print(self.generate_system_utterance((sys_act)))
+        #####print(f"Generating system utterance in nlg.py based on sys_act {sys_act}")
+        #####print(self.generate_system_utterance((sys_act)))
         return {'sys_utterance': self.generate_system_utterance(sys_act)}
 
 

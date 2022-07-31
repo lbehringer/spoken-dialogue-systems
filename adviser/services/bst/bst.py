@@ -54,7 +54,7 @@ class HandcraftedBST(Service):
         # save last turn to memory
         self.bs.start_new_turn()
         if user_acts:
-            print(f"User acts at start of update_bst: {user_acts}")
+            #####print(f"User acts at start of update_bst: {user_acts}")
             self._reset_select_informs(user_acts)
             self._reset_informs(user_acts)
             self._reset_requests()
@@ -69,8 +69,8 @@ class HandcraftedBST(Service):
                 num_entries, discriminable = self.bs.get_num_dbmatches()
                 self.bs["num_matches"] = num_entries
                 self.bs["discriminable"] = discriminable
-                print("Returning non-SelectOption bs")
-                print(self.bs)
+                #####print("Returning non-SelectOption bs")
+                #####print(self.bs)
         return {'beliefstate': self.bs}
 
     def dialog_start(self):
@@ -151,11 +151,8 @@ class HandcraftedBST(Service):
 
         # Handle user acts
         for act in user_acts:
-            print(act)
+            #####print(act)
             if act.type == UserActionType.Request:
-                print(act.slot)
-                print("beliefstate requests:")
-                print(self.bs['requests'])
                 self.bs['requests'][act.slot] = act.score
             elif act.type == UserActionType.Inform:
                 # add informs and their scores to the beliefstate

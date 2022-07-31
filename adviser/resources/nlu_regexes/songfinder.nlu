@@ -50,6 +50,12 @@ rule request(track_name)
 rule request(preview_url)
     "play a {slot_synonyms("preview_url")}"
 
+rule request(danceability)
+    "highest {danceability}"
+
+rule request(instrumentalness)
+    "{instrumentalness}"
+
 # Select one of several options
 
 rule selectoption(track_name)
@@ -85,5 +91,8 @@ function slot_synonyms(slot)
 
     if slot = "preview_url"
         "preview"
+    
+    if slot = "danceability"
+        "danceability"
         
 function IMPOSSIBLEREGEX(): "^\b$"

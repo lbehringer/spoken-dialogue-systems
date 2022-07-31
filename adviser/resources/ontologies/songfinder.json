@@ -61,7 +61,9 @@
         "album_id",
         "track_name",
         "track_id",
-        "preview_url"
+        "preview_url",
+        "danceability",
+        "instrumentalness"
     ],
     "system_requestable": [
         "artist_name",
