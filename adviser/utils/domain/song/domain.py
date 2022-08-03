@@ -235,14 +235,17 @@ class SongDomain(LookupDomain):
                 raise(e)
                 return None
         else:
+            track_name = track_name.replace("'", "")
             query = f"artist:{artist_name}, album:{album_name}, track:{track_name}"
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
-                result = results["tracks"]["items"][0]
-                track_id_list = [result["id"]]
-                features_list = self.spotify.audio_features(track_id_list)
-                result["audio_features"] = features_list[0]
-                return [result]
+                print(f"SPOTIFY RESPONSE: {results}")
+                if results["tracks"]["items"]:
+                    result = results["tracks"]["items"][0]
+                    track_id_list = [result["id"]]
+                    features_list = self.spotify.audio_features(track_id_list)
+                    result["audio_features"] = features_list[0]
+                    return [result]
             except BaseException as e:
                 raise(e)
                 return None

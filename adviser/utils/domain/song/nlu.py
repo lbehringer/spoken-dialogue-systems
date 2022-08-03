@@ -78,7 +78,9 @@ class SongNLU(HandcraftedNLU):
                 print(self.sys_act_info)
                 if user_utterance is not None:
                     user_utterance = user_utterance.strip()
+                    # PASS INFO FOR DANCEABILITY IN A WAY THAT IT COULD BE UPDATED IN THE BST
                     if self.sys_act_info["last_act"].slot_values:
+                        # check if user utterance matches any of the selectable values (e.g. for track_name, if it matches one of the track_name options)
                         key = list(self.sys_act_info["last_act"].slot_values.keys())[0]
                         for val in self.sys_act_info["last_act"].slot_values[key][0]:
                             if user_utterance == val.lower():
@@ -127,6 +129,8 @@ class SongNLU(HandcraftedNLU):
             self.sys_act_info['last_request'] = sys_state['lastRequestSlot']
         if "last_act" in sys_state:
             self.sys_act_info['last_act'] = sys_state['last_act']
+            # THIS NEEDS TO BE SAVED SOMEWHERE
+            # something like current song should mark this
             print(f"UPDATING LAST_ACT: {self.sys_act_info['last_act']}")
 
 
@@ -206,6 +210,8 @@ class SongNLU(HandcraftedNLU):
                     # New user act -- UserAct()
                     user_act = UserAct(act_type=user_act_type, text=user_utterance)
                     self.user_acts.append(user_act)
+
+
 
     def _initialize(self):
         """

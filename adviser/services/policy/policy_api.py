@@ -165,6 +165,7 @@ class HandcraftedPolicy(Service):
         """
         # retrieve from memory if possible
         if self.memory:
+            print("_QUERY_DB: CHECKING MEMORY")
             memory_results = []
             constraints, _ = self._get_constraints(beliefstate)
             for memory_entry in self.memory:
@@ -180,6 +181,8 @@ class HandcraftedPolicy(Service):
             if memory_results:
                 #####print("RETURNING ENTRY FROM MEMORY")
                 return memory_results
+        print("_QUERY_DB: MEMORY NOT FOUND")
+        
 
         # determine if an entity has already been suggested or was mentioned by the user
         name = self._get_name(beliefstate)
@@ -247,6 +250,7 @@ class HandcraftedPolicy(Service):
             if slot not in dontcare:
                 for value in informs[slot]:
                     slots[slot] = value
+        print(f"_GET_CONSTRAINTS: RETURNING CONSTRAINTS: {slots}")
         return slots, dontcare
 
     def _mandatory_requests_fulfilled(self, belief_state: BeliefState):
@@ -459,21 +463,11 @@ class HandcraftedPolicy(Service):
             print(f"sys_act after adding selectable slots: {sys_act}")
             return sys_act
 
-            # next_req = self._gen_next_request(temp, beliefstate)
-            # if next_req:
-            #####     print(next_req)
-            #####     print("next sysact is request")
-            #     sys_act.type = SysActionType.Request
-            #     sys_act.add_value(next_req)
-            #     return sys_act
-
-        # Otherwise action type will be inform, so return an empty inform (to be filled in later)
+        # Otherwise SysActionType will be InformByName, so return an empty InformByName (to be filled in later)
         sys_act.type = SysActionType.InformByName
         #####print("next sysact is inform")
         return sys_act
  
-    #def _gen_next_select(self, temp: Dict[str, List[str]], belief_state: BeliefState):
-    #    pass
 
     def _gen_next_request(self, temp: Dict[str, List[str]], belief_state: BeliefState):
         """
@@ -691,12 +685,21 @@ class HandcraftedPolicy(Service):
                             requested_slot = selectable_slot
                             break
                     if requested_slot:
-                        # add most track with max value to sys_act
+                        # add track with max value to sys_act
                         result = self.get_max_value_candidate(requested_slot)
                         sys_act.type = SysActionType.InformByName 
                         sys_act.add_value(requested_slot, value=result[requested_slot])
                         sys_act.add_value("artificial_id", value=result["artificial_id"])
                         sys_act.add_value("track_name", value=result["track_name"])
+
+                        # update beliefstate from policy
+                        policy_beliefstate = {}
+                        policy_beliefstate['user_acts'] = {UserActionType.Inform}
+                        policy_beliefstate['requests'] = {}
+                        policy_beliefstate['discriminable'] = bool(False)
+                        policy_beliefstate['informs'] = {"track_name": {result["track_name"]: 1.0}}
+                        policy_beliefstate['num_matches'] = 1
+                        self.update_beliefstate_from_policy(policy_beliefstate)
                     
                 if slot not in sys_act.slot_values:
                     #####print(f"self.current_suggestions: {self.current_suggestions}")
@@ -726,3 +729,17 @@ class HandcraftedPolicy(Service):
                     max_entry = memory_entry
         #####print(f"RETURNING MAX_VALUE_CANDIDATE: {max_entry}")
         return max_entry
+
+    @PublishSubscribe(pub_topics=["policy_beliefstate"])
+    def update_beliefstate_from_policy(self, policy_beliefstate: dict):
+        """
+            Passes beliefstate information that was changed in the policy to BST so that it can be saved until the next turn.
+
+            Args:
+                policy_beliefstate (dict): A dict with the same structure as the beliefstate
+
+            Returns:
+                policy_beliefstate (dict): A dict with the same structure as the beliefstate
+        """
+        print(f"RETURNING POLICY_BELIEFSTATE: {policy_beliefstate}")
+        return {"policy_beliefstate": policy_beliefstate}

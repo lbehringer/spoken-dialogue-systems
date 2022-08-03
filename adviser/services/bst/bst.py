@@ -17,6 +17,7 @@
 #
 ###############################################################################
 
+from email import policy
 from typing import List, Set
 
 from services.service import PublishSubscribe
@@ -54,7 +55,7 @@ class HandcraftedBST(Service):
         # save last turn to memory
         self.bs.start_new_turn()
         if user_acts:
-            #####print(f"User acts at start of update_bst: {user_acts}")
+            print(f"User acts at start of update_bst: {user_acts}")
             self._reset_select_informs(user_acts)
             self._reset_informs(user_acts)
             self._reset_requests()
@@ -69,9 +70,49 @@ class HandcraftedBST(Service):
                 num_entries, discriminable = self.bs.get_num_dbmatches()
                 self.bs["num_matches"] = num_entries
                 self.bs["discriminable"] = discriminable
-                #####print("Returning non-SelectOption bs")
-                #####print(self.bs)
+            print(f"PASSING BELIEFSTATE FROM BST TO POLICY: {self.bs}")
         return {'beliefstate': self.bs}
+
+    @PublishSubscribe(sub_topics=["policy_beliefstate"])
+    def update_bst_from_policy(self, policy_beliefstate):
+        """
+            Updates the current dialog belief state (which tracks the system's
+            knowledge about what has been said in the dialog) based on an update passed back
+            by the policy.
+
+            Args:
+                user_acts (list): a list of UserAct objects mapped from the user's last utterance
+
+            Returns:
+                (dict): a dictionary with the key "beliefstate" and the value the updated
+                        BeliefState object
+
+        """
+        print("CALLING UPDATE_BST_FROM_POLICY")
+        print(f"policy_beliefstate: {policy_beliefstate}")
+        for acts_key in policy_beliefstate.keys():
+            if acts_key in self.bs:
+                if policy_beliefstate[acts_key] is not None:
+                    # if value is dict
+                    if type(policy_beliefstate[acts_key]) == dict:
+                        for slot_key in policy_beliefstate[acts_key]:
+                            self.bs[acts_key][slot_key] = policy_beliefstate[acts_key][slot_key]
+                            print(f"appended {policy_beliefstate[acts_key][slot_key]} to self.bs[{self.bs[acts_key]}]")
+                    # if value type is int:
+                    elif type(policy_beliefstate[acts_key]) == int or \
+                        type(policy_beliefstate[acts_key]) == bool:
+                        self.bs[acts_key] = policy_beliefstate[acts_key]
+                    else:
+                        try:
+                            self.bs[acts_key] = policy_beliefstate[acts_key]
+                        except:
+                            continue
+        if self.bs["user_acts"]:
+            if self.bs["user_acts"] == {UserActionType.Inform}:
+                self._reset_requests()
+        print(f"BELIEFSTATE UPDATED THROUGH POLICY: {self.bs}")
+        return {'beliefstate': self.bs}
+
 
     def dialog_start(self):
         """
