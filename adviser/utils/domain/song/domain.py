@@ -166,8 +166,8 @@ class SongDomain(LookupDomain):
                 entity_id (str): primary key value of the entity
                 requested_slots (dict): slot-value mapping of constraints
             """
-        print(f"requested_slots: {requested_slots}")
-        print(f"last_results: {self.last_results}")
+        #####print(f"requested_slots: {requested_slots}")
+        #####print(f"last_results: {self.last_results}")
         for result in self.last_results:
             if result["artificial_id"] == entity_id:
                 return [result]
@@ -264,7 +264,7 @@ class SongDomain(LookupDomain):
             query = f"artist:{artist_name}, album:{album_name}, track:{track_name}"
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
-                print(f"SPOTIFY RESPONSE: {results}")
+                #####print(f"SPOTIFY RESPONSE: {results}")
                 if results["tracks"]["items"]:
                     result = results["tracks"]["items"][0]
                     track_id_list = [result["id"]]

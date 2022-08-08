@@ -225,7 +225,7 @@ class BeliefState:
         candidates = []
         for req_slot in self._history[turn_idx]["requests"]:
             candidates.append(req_slot)
-        print(f"Slots requested by the user: {candidates}")
+        #####print(f"Slots requested by the user: {candidates}")
         return candidates
 
     def _remove_dontcare_slots(self, slot_value_dict: dict):

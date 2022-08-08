@@ -56,7 +56,7 @@ class HandcraftedBST(Service):
         # save last turn to memory
         self.bs.start_new_turn()
         if user_acts:
-            print(f"User acts at start of update_bst: {user_acts}")
+            #####print(f"User acts at start of update_bst: {user_acts}")
             self._reset_select_informs(user_acts)
             self._reset_informs(user_acts)
             self._reset_requests()
@@ -71,7 +71,7 @@ class HandcraftedBST(Service):
                 num_entries, discriminable = self.bs.get_num_dbmatches()
                 self.bs["num_matches"] = num_entries
                 self.bs["discriminable"] = discriminable
-            print(f"PASSING BELIEFSTATE FROM BST TO POLICY: {self.bs}")
+            #####print(f"PASSING BELIEFSTATE FROM BST TO POLICY: {self.bs}")
         return {"beliefstate": self.bs}
 
     @PublishSubscribe(sub_topics=["policy_beliefstate"])
@@ -89,8 +89,8 @@ class HandcraftedBST(Service):
                         BeliefState object
 
         """
-        print("CALLING UPDATE_BST_FROM_POLICY")
-        print(f"policy_beliefstate: {policy_beliefstate}")
+        #####print("CALLING UPDATE_BST_FROM_POLICY")
+        #####print(f"policy_beliefstate: {policy_beliefstate}")
         for acts_key in policy_beliefstate.keys():
             if acts_key in self.bs:
                 if policy_beliefstate[acts_key] is not None:
@@ -100,9 +100,7 @@ class HandcraftedBST(Service):
                             self.bs[acts_key][slot_key] = policy_beliefstate[acts_key][
                                 slot_key
                             ]
-                            print(
-                                f"appended {policy_beliefstate[acts_key][slot_key]} to self.bs[{self.bs[acts_key]}]"
-                            )
+                            #####print(f"appended {policy_beliefstate[acts_key][slot_key]} to self.bs[{self.bs[acts_key]}]")
                     # if value type is int:
                     elif (
                         type(policy_beliefstate[acts_key]) == int
@@ -117,7 +115,7 @@ class HandcraftedBST(Service):
         if self.bs["user_acts"]:
             if self.bs["user_acts"] == {UserActionType.Inform}:
                 self._reset_requests()
-        print(f"BELIEFSTATE UPDATED THROUGH POLICY: {self.bs}")
+        #####print(f"BELIEFSTATE UPDATED THROUGH POLICY: {self.bs}")
         return {"beliefstate": self.bs}
 
     def dialog_start(self):
