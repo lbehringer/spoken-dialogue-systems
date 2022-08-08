@@ -20,17 +20,18 @@
 from typing import List, Iterable
 from utils.domain.domain import Domain
 
+
 class LookupDomain(Domain):
     """ Abstract class for linking a domain with a data access method.
 
         Derive from this class if you need to implement a domain with a not yet
         supported data backend, otherwise choose a fitting existing child class. """
 
-    def __init__(self, identifier : str, display_name : str):
+    def __init__(self, identifier: str, display_name: str):
         Domain.__init__(self, identifier)
         self.display_name = display_name
 
-    def find_entities(self, constraints : dict, requested_slots: Iterable = iter(())):
+    def find_entities(self, constraints: dict, requested_slots: Iterable = iter(())):
         """ Returns all entities from the data backend that meet the constraints.
 
         Args:

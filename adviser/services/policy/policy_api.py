@@ -173,7 +173,6 @@ class HandcraftedPolicy(Service):
         """
         # retrieve from memory if possible
         if self.memory:
-            print("_QUERY_DB: CHECKING MEMORY")
             memory_results = []
             constraints, _ = self._get_constraints(beliefstate)
             for memory_entry in self.memory:
@@ -187,17 +186,13 @@ class HandcraftedPolicy(Service):
                             del memory_results[-1]
                             break
             if memory_results:
-                #####print("RETURNING ENTRY FROM MEMORY")
                 return memory_results
-        print("_QUERY_DB: MEMORY NOT FOUND")
 
         # determine if an entity has already been suggested or was mentioned by the user
         name = self._get_name(beliefstate)
-        #####print(f"name (if an entity has already been suggested or was mentioned by user): {name}")
         # if yes and the user is asking for info about a specific entity, generate a query to get
         # that info for the slots they have specified
         if name and beliefstate["requests"]:
-            #####print(f"name and beliefstate['requests' exist: Printing beliefstate: {beliefstate}")
             requested_slots = beliefstate["requests"]
             return self.domain.find_info_about_entity(name, requested_slots)
         # otherwise, issue a query to find all entities which satisfy the constraints the user
@@ -228,11 +223,8 @@ class HandcraftedPolicy(Service):
             ][0]
         # if the user is trying to query by name
         else:
-            #####print(f"self.s_index: {self.s_index}")
-            ######print(f"self.current_suggestions: {self.current_suggestions}")
             if self.s_index < len(self.current_suggestions):
                 current_suggestion = self.current_suggestions[self.s_index]
-                #####print(f"current_suggestion: {current_suggestion}")
                 if current_suggestion:
                     name = current_suggestion[self.domain_key]
         return name
@@ -263,7 +255,6 @@ class HandcraftedPolicy(Service):
             if slot not in dontcare:
                 for value in informs[slot]:
                     slots[slot] = value
-        print(f"_GET_CONSTRAINTS: RETURNING CONSTRAINTS: {slots}")
         return slots, dontcare
 
     def _mandatory_requests_fulfilled(self, belief_state: BeliefState):
@@ -331,7 +322,6 @@ class HandcraftedPolicy(Service):
 
         --LV
         """
-        print(f"Beliefstate passed to policy_api.py: {beliefstate}")
         sys_state = {}
         # Assuming this happens only because domain is not actually active --LV
         """if UserActionType.Bad in beliefstate['user_acts'] or beliefstate['requests'] \
@@ -358,7 +348,6 @@ class HandcraftedPolicy(Service):
             self.domain.get_primary_key() in beliefstate["informs"]
             and not beliefstate["requests"]
         ):
-            #####print("primary_key is in beliefstate['informs'] and nothing is in beliefstate['requests']")
             sys_act = SysAct()
             sys_act.type = SysActionType.InformByName
             sys_act.add_value(
@@ -369,8 +358,6 @@ class HandcraftedPolicy(Service):
         # Otherwise we need to query the db to determine next action
         results = self._query_db(beliefstate)
         # if memory is empty, populate it (after first API request)
-        #####print(f"RESULTS: {results}")
-        #####print(f"MEMORY: {self.memory}")
         if not self.memory:
             self.memory = results
         # else update memory with new entries (after subsequent API requests)
@@ -396,10 +383,8 @@ class HandcraftedPolicy(Service):
             for result in cleaned_results:
                 if result["artificial_id"] not in artificial_ids:
                     self.memory.append(result)
-            #####print(f"UPDATED MEMORY: {self.memory}")
 
         sys_act = self._raw_action(results, beliefstate)
-        #####print(f"sys_act in policy_api.py: {sys_act}")
         # requests are fairly easy, if it's a request, return it directly
         if sys_act.type == SysActionType.Request:
             if len(list(sys_act.slot_values.keys())) > 0:
@@ -412,7 +397,6 @@ class HandcraftedPolicy(Service):
             self._convert_inform(results, sys_act, beliefstate)
             # update belief state to reflect the offer we just made
             values = sys_act.get_values(self.domain.get_primary_key())
-            #####print(f"Sys act with values: {sys_act}")
             if values:
                 # belief_state['system']['lastInformedPrimKeyVal'] = values[0]
                 sys_state["lastInformedPrimKeyVal"] = values[0]
@@ -421,10 +405,6 @@ class HandcraftedPolicy(Service):
                 sys_act.add_value(self.domain.get_primary_key(), "none")
 
         sys_state["last_act"] = sys_act
-        print(f"sys_state in policy_api.py{sys_state}")
-        #####print(type(sys_state["last_act"]))
-        #####print(sys_state["last_act"].type)
-        #####print(sys_state["last_act"].slot_values)
         return (sys_act, sys_state)
 
     def _raw_action(self, q_res: iter, beliefstate: BeliefState) -> SysAct:
@@ -453,10 +433,7 @@ class HandcraftedPolicy(Service):
                         sys_act.type = SysActionType.InformByName
                         return sys_act
 
-            #####print("raw_action received result list of length >1")
             constraints, dontcare = self._get_constraints(beliefstate)
-            #####print(f"constraints: {constraints}")
-            #####print(f"dontcare: {dontcare}")
             # Gather all the results for each column
             temp = {key: [] for key in q_res[0].keys()}
 
@@ -465,7 +442,6 @@ class HandcraftedPolicy(Service):
                 for key in result.keys():
                     if key != self.domain_key:
                         temp[key].append(result[key])
-            #####print(f"temp: {temp}")
             # get column with most unique values
             max_set_len = 0
             max_len_key = ""
@@ -473,18 +449,15 @@ class HandcraftedPolicy(Service):
                 if len(set(temp[key])) > max_set_len:
                     max_len_key = key
                     max_set_len = len(set(temp[key]))
-            #####print(f"Key with max unique values: {max_len_key}")
             # next_sel = self._gen_next_select(max_len_key, beliefstate)
             sys_act.type = SysActionType.Select
             sys_act.add_value(max_len_key, value=temp[max_len_key])
             for selectable_slot in self.domain.get_selectable_slots(q_res[0]):
                 sys_act.add_value(selectable_slot, value="none")
-            print(f"sys_act after adding selectable slots: {sys_act}")
             return sys_act
 
         # Otherwise SysActionType will be InformByName, so return an empty InformByName (to be filled in later)
         sys_act.type = SysActionType.InformByName
-        #####print("next sysact is inform")
         return sys_act
 
     def _gen_next_request(self, temp: Dict[str, List[str]], belief_state: BeliefState):
@@ -571,7 +544,6 @@ class HandcraftedPolicy(Service):
             self._convert_inform_by_alternatives(sys_act, q_results, beliefstate)
 
         else:
-            #####print("calling _convert_inform_by_constraints")
             self._convert_inform_by_constraints(q_results, sys_act, beliefstate)
 
     def _convert_inform_by_primkey(
@@ -669,21 +641,14 @@ class HandcraftedPolicy(Service):
                 belief_state (BeliefState): the current system beliefs
 
         """
-        #####print("CALLING _convert_inform_by_constraints")
         if list(q_results):
-            #####print(f"list(q_results): {q_results}")
             self.current_suggestions = []
             self.s_index = 0
             for result in q_results:
                 self.current_suggestions.append(result)
-            #####print(f"self.current_suggestions after appending q_results: {self.current_suggestions}")
             result = self.current_suggestions[0]
-            #####print(f"RESULT: {result}")
             sys_act.add_value(self.domain_key, result[self.domain_key])
-            #####print(sys_act.slot_values)
             # Add default Inform slots
-            #####print(f"default inform slots: {self.domain.get_default_inform_slots()}")
-            #####print(f"sys_act.slot_values: {sys_act.slot_values}")
             for slot in self.domain.get_default_inform_slots():
                 if slot not in sys_act.slot_values:
                     sys_act.add_value(slot, result[slot])
@@ -698,12 +663,9 @@ class HandcraftedPolicy(Service):
             sys_act.add_value(c, constraints[c])
 
         if self.current_suggestions:
-            #####print(belief_state["user_acts"])
             if UserActionType.Request in belief_state["user_acts"]:
                 # delete previously stored slot values from sys_act
-                #####print("USER REQUEST RECOGNIZED. DELETING PREVIOUSLY STORED SLOT VALUES FROM sys_act.")
                 sys_act.slot_values = {}
-                #####print(f"belief_state: {belief_state}")
 
                 selectable_slots = self.domain.get_selectable_slots(q_results[0])
                 requested_slot = ""
@@ -734,13 +696,7 @@ class HandcraftedPolicy(Service):
                         self.update_beliefstate_from_policy(policy_beliefstate)
 
                 if slot not in sys_act.slot_values:
-                    #####print(f"self.current_suggestions: {self.current_suggestions}")
-                    #####print(f"ADDING {self.current_suggestions[0][slot]}")
                     sys_act.add_value(slot, self.current_suggestions[0][slot])
-            if UserActionType.Request in belief_state["user_acts"]:
-                print(
-                    f"sys_act.slot_values should now only contain the requested slot: {sys_act.slot_values}"
-                )
 
     def get_max_value_candidate(self, slot: str):
         """
@@ -761,7 +717,6 @@ class HandcraftedPolicy(Service):
                 if memory_entry[slot] > max_value:
                     max_value = memory_entry[slot]
                     max_entry = memory_entry
-        #####print(f"RETURNING MAX_VALUE_CANDIDATE: {max_entry}")
         return max_entry
 
     @PublishSubscribe(pub_topics=["policy_beliefstate"])
@@ -775,5 +730,4 @@ class HandcraftedPolicy(Service):
             Returns:
                 policy_beliefstate (dict): A dict with the same structure as the beliefstate
         """
-        print(f"RETURNING POLICY_BELIEFSTATE: {policy_beliefstate}")
         return {"policy_beliefstate": policy_beliefstate}

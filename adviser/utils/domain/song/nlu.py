@@ -83,7 +83,6 @@ class SongNLU(HandcraftedNLU):
         # if last system act was Select, generate SelectOption user act:
         if self.sys_act_info["last_act"]:
             if self.sys_act_info["last_act"].type == SysActionType.Select:
-                print(self.sys_act_info)
                 if user_utterance is not None:
                     user_utterance = user_utterance.strip()
                     # PASS INFO FOR DANCEABILITY IN A WAY THAT IT COULD BE UPDATED IN THE BST
@@ -142,16 +141,12 @@ class SongNLU(HandcraftedNLU):
 
     @PublishSubscribe(sub_topics=["sys_state"])
     def _update_sys_act_info(self, sys_state):
-        print("CALLING _UPDATE_SYS_ACT_INFO")
         if "lastInformedPrimKeyVal" in sys_state:
             self.sys_act_info["last_offer"] = sys_state["lastInformedPrimKeyVal"]
         if "lastRequestSlot" in sys_state:
             self.sys_act_info["last_request"] = sys_state["lastRequestSlot"]
         if "last_act" in sys_state:
             self.sys_act_info["last_act"] = sys_state["last_act"]
-            # THIS NEEDS TO BE SAVED SOMEWHERE
-            # something like current song should mark this
-            print(f"UPDATING LAST_ACT: {self.sys_act_info['last_act']}")
 
     def _match_general_act(self, user_utterance: str):
         """

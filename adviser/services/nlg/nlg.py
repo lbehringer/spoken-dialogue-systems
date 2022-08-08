@@ -79,8 +79,6 @@ class HandcraftedNLG(Service):
         Returns:
             dict: a dict containing the system utterance
         """
-        #####print(f"Generating system utterance in nlg.py based on sys_act {sys_act}")
-        #####print(self.generate_system_utterance((sys_act)))
         return {'sys_utterance': self.generate_system_utterance(sys_act)}
 
 
@@ -111,8 +109,6 @@ class HandcraftedNLG(Service):
             self.logger.info("System Action: " + str(sys_act.type)
                              + " - Slots: " + str(sys_act.slot_values))
 
-        # self.logger.dialog_turn("System Action: " + message)
-        #####print("System act type: " + str(sys_act.type))
         return message
 
 

@@ -41,7 +41,6 @@ class SongDomain(LookupDomain):
                                         system requestable slots and the primary key
                         
         """
-        #####print(f"last_results: {self.last_results}")
         if "artist_name" in constraints and "album_name" in constraints:
 
             if "track_name" in constraints:
@@ -153,8 +152,6 @@ class SongDomain(LookupDomain):
                         cleaned_result_dict = result_dict
                     cleaned_result_list.append(cleaned_result_dict)
                 self.last_results = cleaned_result_list
-                #####print("returning list of results")
-                #####print(cleaned_result_list)
                 return cleaned_result_list
         else:
             return []
@@ -166,8 +163,6 @@ class SongDomain(LookupDomain):
                 entity_id (str): primary key value of the entity
                 requested_slots (dict): slot-value mapping of constraints
             """
-        print(f"requested_slots: {requested_slots}")
-        print(f"last_results: {self.last_results}")
         for result in self.last_results:
             if result["artificial_id"] == entity_id:
                 return [result]
@@ -232,7 +227,6 @@ class SongDomain(LookupDomain):
             "track_name",
         ]
         selectable_slots = [key for key in result.keys() if key not in blacklist]
-        #####print(f"selectable_slots: {selectable_slots}")
         return selectable_slots
 
     def get_primary_key(self) -> str:
@@ -264,7 +258,6 @@ class SongDomain(LookupDomain):
             query = f"artist:{artist_name}, album:{album_name}, track:{track_name}"
             try:
                 results = self.spotify.search(q=query, market=market, type=type)
-                print(f"SPOTIFY RESPONSE: {results}")
                 if results["tracks"]["items"]:
                     result = results["tracks"]["items"][0]
                     track_id_list = [result["id"]]
@@ -277,10 +270,6 @@ class SongDomain(LookupDomain):
 
     def _confirm_artist_id(self, artist_name):
         """if there is no exact match for artist_name string, suggest first result to user """
-        market = "DE"
-        query = f"artist:{artist_name}"
-        results = self.spotify.search(query, market=market)
-        #####print(results)
         pass
 
     def get_keyword(self):
