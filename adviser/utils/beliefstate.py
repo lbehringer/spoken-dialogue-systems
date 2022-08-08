@@ -36,10 +36,11 @@ class BeliefState:
         * if the db matches can further be split
 
     """
+
     def __init__(self, domain: JSONLookupDomain):
         self.domain = domain
         self._history = [self._init_beliefstate()]
-    
+
     def dialog_start(self):
         self._history = [self._init_beliefstate()]
 
@@ -70,13 +71,13 @@ class BeliefState:
         #     return ""
         string = ""
         if isinstance(sub_dict, dict):
-            string += '{'
+            string += "{"
             for key in sub_dict:
                 string += "'" + str(key) + "': "
                 string += self._recursive_repr(sub_dict[key], indent + 2)
-            string += '}\n' + ' ' * indent
+            string += "}\n" + " " * indent
         else:
-            string += str(sub_dict) + ' '
+            string += str(sub_dict) + " "
         return string
 
     def __repr__(self):
@@ -104,16 +105,23 @@ class BeliefState:
         """
 
         # TODO: revist when we include probabilites, sets should become dictionaries
-        belief_state = {"user_acts": set(),
-                        "informs": {},
-                        "requests": {},
-                        "num_matches": 0,
-                        "discriminable": True}
+        belief_state = {
+            "user_acts": set(),
+            "informs": {},
+            "requests": {},
+            "num_matches": 0,
+            "discriminable": True,
+        }
         return belief_state
 
-    def get_most_probable_slot_beliefs(self, slot: str, consider_NONE: bool = True,
-                                       threshold: float = 0.7,
-                                       max_results: int = 1, turn_idx: int = -1):
+    def get_most_probable_slot_beliefs(
+        self,
+        slot: str,
+        consider_NONE: bool = True,
+        threshold: float = 0.7,
+        max_results: int = 1,
+        turn_idx: int = -1,
+    ):
         """ Extract the most probable value for each system requestable slot
 
         If the most probable value for a slot does not exceed the threshold,
@@ -139,16 +147,26 @@ class BeliefState:
         informs = self._history[turn_idx]["informs"]
         candidates = []
         if slot in informs:
-            sorted_slot_cands = sorted(informs[slot].items(), key=lambda kv: kv[1], reverse=True)
+            sorted_slot_cands = sorted(
+                informs[slot].items(), key=lambda kv: kv[1], reverse=True
+            )
             # restrict result count to specified maximum
             filtered_slot_cands = sorted_slot_cands[:max_results]
             # threshold by probabilities
-            filtered_slot_cands = [slot_cand[0] for slot_cand in filtered_slot_cands
-                                   if slot_cand[1] >= threshold]
+            filtered_slot_cands = [
+                slot_cand[0]
+                for slot_cand in filtered_slot_cands
+                if slot_cand[1] >= threshold
+            ]
         return candidates
 
-    def get_most_probable_inf_beliefs(self, consider_NONE: bool = True, threshold: float = 0.7,
-                                      max_results: int = 1, turn_idx: int = -1):
+    def get_most_probable_inf_beliefs(
+        self,
+        consider_NONE: bool = True,
+        threshold: float = 0.7,
+        max_results: int = 1,
+        turn_idx: int = -1,
+    ):
         """ Extract the most probable value for each system requestable slot
 
         If the most probable value for a slot does not exceed the threshold,
@@ -175,12 +193,17 @@ class BeliefState:
         informs = self._history[turn_idx]["informs"]
         for slot in informs:
             # sort by belief
-            sorted_slot_cands = sorted(informs[slot].items(), key=lambda kv: kv[1], reverse=True)
+            sorted_slot_cands = sorted(
+                informs[slot].items(), key=lambda kv: kv[1], reverse=True
+            )
             # restrict result count to specified maximum
             filtered_slot_cands = sorted_slot_cands[:max_results]
             # threshold by probabilities
-            filtered_slot_cands = [slot_cand[0] for slot_cand in filtered_slot_cands
-                                   if slot_cand[1] >= threshold]
+            filtered_slot_cands = [
+                slot_cand[0]
+                for slot_cand in filtered_slot_cands
+                if slot_cand[1] >= threshold
+            ]
             if len(filtered_slot_cands) > 0:
                 # append results if any remain after filtering
                 if max_results == 1:
@@ -189,7 +212,6 @@ class BeliefState:
                 else:
                     # list
                     candidates[slot] = filtered_slot_cands
-        #####print(f"BST: Most probable values for system requestable slots (i.e. values that were informed by user): {candidates}")
         return candidates
 
     def get_requested_slots(self, turn_idx: int = -1):
@@ -200,16 +222,18 @@ class BeliefState:
         """
 
         candidates = []
-        for req_slot in self._history[turn_idx]['requests']:
+        for req_slot in self._history[turn_idx]["requests"]:
             candidates.append(req_slot)
-        #####print(f"Slots requested by the user: {candidates}")
         return candidates
 
     def _remove_dontcare_slots(self, slot_value_dict: dict):
         """ Returns a new dictionary without the slots set to dontcare """
 
-        return {slot: value for slot, value in slot_value_dict.items()
-                if value != 'dontcare'}
+        return {
+            slot: value
+            for slot, value in slot_value_dict.items()
+            if value != "dontcare"
+        }
 
     def get_num_dbmatches(self):
         """ Updates the belief state's entry for the number of database matches given the
@@ -217,10 +241,13 @@ class BeliefState:
         """
 
         # check how many db entities match the current constraints
-        candidates = self.get_most_probable_inf_beliefs(consider_NONE=True, threshold=0.7,
-                                                        max_results=1)
+        candidates = self.get_most_probable_inf_beliefs(
+            consider_NONE=True, threshold=0.7, max_results=1
+        )
         constraints = self._remove_dontcare_slots(candidates)
-        db_matches = self.domain.find_entities(constraints, self.domain.get_informable_slots())
+        db_matches = self.domain.find_entities(
+            constraints, self.domain.get_informable_slots()
+        )
         num_matches = len(db_matches)
 
         # check if matching db entities could be discriminated by more
@@ -228,7 +255,9 @@ class BeliefState:
         discriminable = False
         if len(db_matches) > 1:
             dontcare_slots = set(candidates.keys()) - set(constraints.keys())
-            informable_slots = set(self.domain.get_informable_slots()) - set(self.domain.get_primary_key())
+            informable_slots = set(self.domain.get_informable_slots()) - set(
+                self.domain.get_primary_key()
+            )
             for informable_slot in informable_slots:
                 if informable_slot not in dontcare_slots:
                     # this slot could be used to gather more information

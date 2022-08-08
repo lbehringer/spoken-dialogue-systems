@@ -87,7 +87,6 @@ class SysAct(object):
         if slot not in self.slot_values:
             return []
         else:
-            #####print(self.slot_values)
             return self.slot_values[slot]
 
     def __eq__(self, other):

@@ -88,7 +88,6 @@ class Template(Command):
         else:
             variables = self._build_memory_without_free_parameter(slot_dict,
                                                                   parameters.global_memory)
-
         special_case = self._get_applicable_special_case(variables)
         if special_case is not None:
             return special_case.apply(variables)
