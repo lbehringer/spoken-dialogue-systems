@@ -55,6 +55,12 @@ template inform_byname(artificial_id)
 template inform_byname(danceability, artificial_id, track_name)
 	"The most danceable track is {track_name}. What would you like to know about this track?"
 
+template inform_byname(valence, artificial_id, track_name)
+	"The most positive track is {track_name}. What would you like to know about this track?"
+
+template inform_byname(instrumentalness, artificial_id, track_name)
+	"The most instrumental track is {track_name}. What would you like to know about this track?"
+
 # THIS RULE IS AN ATTEMPT FOR AFTER THE USER SELECTED:
 template inform_byname(artificial_id, track_name, artist_name, album_name)
 	"You have selected the track {track_name}. What would you like to know about this track?"

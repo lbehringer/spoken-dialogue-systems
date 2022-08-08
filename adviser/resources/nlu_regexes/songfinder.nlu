@@ -51,10 +51,16 @@ rule request(preview_url)
     "play a {slot_synonyms("preview_url")}"
 
 rule request(danceability)
-    "highest {danceability}"
+    "highest {slot_synonyms("danceability")}"
 
 rule request(instrumentalness)
     "{instrumentalness}"
+
+rule request(valence)
+    "highest {slot_synonyms("valence")}"
+
+rule request(instrumentalness)
+    "highest {slot_synonyms("instrumentalness")}
 
 # Select one of several options
 
@@ -94,5 +100,11 @@ function slot_synonyms(slot)
     
     if slot = "danceability"
         "danceability"
+
+    if slot = "valence"
+        "valence"
+        "positivity"
         
+    if slot = "instrumentalness"
+        "instrumentalness"
 function IMPOSSIBLEREGEX(): "^\b$"

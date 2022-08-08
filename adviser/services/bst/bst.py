@@ -37,8 +37,9 @@ class HandcraftedBST(Service):
         self.bs = BeliefState(domain)
 
     @PublishSubscribe(sub_topics=["user_acts"], pub_topics=["beliefstate"])
-    def update_bst(self, user_acts: List[UserAct] = None) \
-            -> dict(beliefstate=BeliefState):
+    def update_bst(
+        self, user_acts: List[UserAct] = None
+    ) -> dict(beliefstate=BeliefState):
         """
             Updates the current dialog belief state (which tracks the system's
             knowledge about what has been said in the dialog) based on the user actions generated
@@ -71,7 +72,7 @@ class HandcraftedBST(Service):
                 self.bs["num_matches"] = num_entries
                 self.bs["discriminable"] = discriminable
             print(f"PASSING BELIEFSTATE FROM BST TO POLICY: {self.bs}")
-        return {'beliefstate': self.bs}
+        return {"beliefstate": self.bs}
 
     @PublishSubscribe(sub_topics=["policy_beliefstate"])
     def update_bst_from_policy(self, policy_beliefstate):
@@ -96,11 +97,17 @@ class HandcraftedBST(Service):
                     # if value is dict
                     if type(policy_beliefstate[acts_key]) == dict:
                         for slot_key in policy_beliefstate[acts_key]:
-                            self.bs[acts_key][slot_key] = policy_beliefstate[acts_key][slot_key]
-                            print(f"appended {policy_beliefstate[acts_key][slot_key]} to self.bs[{self.bs[acts_key]}]")
+                            self.bs[acts_key][slot_key] = policy_beliefstate[acts_key][
+                                slot_key
+                            ]
+                            print(
+                                f"appended {policy_beliefstate[acts_key][slot_key]} to self.bs[{self.bs[acts_key]}]"
+                            )
                     # if value type is int:
-                    elif type(policy_beliefstate[acts_key]) == int or \
-                        type(policy_beliefstate[acts_key]) == bool:
+                    elif (
+                        type(policy_beliefstate[acts_key]) == int
+                        or type(policy_beliefstate[acts_key]) == bool
+                    ):
                         self.bs[acts_key] = policy_beliefstate[acts_key]
                     else:
                         try:
@@ -111,8 +118,7 @@ class HandcraftedBST(Service):
             if self.bs["user_acts"] == {UserActionType.Inform}:
                 self._reset_requests()
         print(f"BELIEFSTATE UPDATED THROUGH POLICY: {self.bs}")
-        return {'beliefstate': self.bs}
-
+        return {"beliefstate": self.bs}
 
     def dialog_start(self):
         """
@@ -132,10 +138,9 @@ class HandcraftedBST(Service):
         """
 
         slots = {act.slot for act in acts if act.type == UserActionType.SelectOption}
-        for slot in [s for s in self.bs['informs']]:
+        for slot in [s for s in self.bs["informs"]]:
             if slot in slots:
-                del self.bs['informs'][slot]
-
+                del self.bs["informs"][slot]
 
     def _reset_informs(self, acts: List[UserAct]):
         """
@@ -144,17 +149,19 @@ class HandcraftedBST(Service):
         """
 
         slots = {act.slot for act in acts if act.type == UserActionType.Inform}
-        for slot in [s for s in self.bs['informs']]:
+        for slot in [s for s in self.bs["informs"]]:
             if slot in slots:
-                del self.bs['informs'][slot]
+                del self.bs["informs"][slot]
 
     def _reset_requests(self):
         """
             gets rid of requests from the previous turn
         """
-        self.bs['requests'] = {}
+        self.bs["requests"] = {}
 
-    def _get_all_usr_action_types(self, user_acts: List[UserAct]) -> Set[UserActionType]:
+    def _get_all_usr_action_types(
+        self, user_acts: List[UserAct]
+    ) -> Set[UserActionType]:
         """ 
         Returns a set of all different UserActionTypes in user_acts.
 
@@ -178,11 +185,13 @@ class HandcraftedBST(Service):
                 user_acts (list[UserAct]): the list of user acts to use to update the belief state
 
         """
-        
+
         # reset any offers if the user informs any new information
-        if self.domain.get_primary_key() in self.bs['informs'] \
-                and UserActionType.Inform in self.bs["user_acts"]:
-            del self.bs['informs'][self.domain.get_primary_key()]
+        if (
+            self.domain.get_primary_key() in self.bs["informs"]
+            and UserActionType.Inform in self.bs["user_acts"]
+        ):
+            del self.bs["informs"][self.domain.get_primary_key()]
 
         # We choose to interpret switching as wanting to start a new dialog and do not support
         # resuming an old dialog
@@ -194,22 +203,23 @@ class HandcraftedBST(Service):
         for act in user_acts:
             #####print(act)
             if act.type == UserActionType.Request:
-                self.bs['requests'][act.slot] = act.score
+                self.bs["requests"][act.slot] = act.score
             elif act.type == UserActionType.Inform:
                 # add informs and their scores to the beliefstate
                 if act.slot in self.bs["informs"]:
-                    self.bs['informs'][act.slot][act.value] = act.score
+                    self.bs["informs"][act.slot][act.value] = act.score
                 else:
-                    self.bs['informs'][act.slot] = {act.value: act.score}
+                    self.bs["informs"][act.slot] = {act.value: act.score}
             elif act.type == UserActionType.SelectOption:
                 # Select is similar to an inform but overwrites a previous list entry with a string
-                self.bs['informs'][act.slot] = {act.value: act.score}
+                self.bs["informs"][act.slot] = {act.value: act.score}
             elif act.type == UserActionType.NegativeInform:
                 # reset mentioned value to zero probability
-                if act.slot in self.bs['informs']:
-                    if act.value in self.bs['informs'][act.slot]:
-                        del self.bs['informs'][act.slot][act.value]
+                if act.slot in self.bs["informs"]:
+                    if act.value in self.bs["informs"][act.slot]:
+                        del self.bs["informs"][act.slot][act.value]
             elif act.type == UserActionType.RequestAlternatives:
                 # This way it is clear that the user is no longer asking about that one item
-                if self.domain.get_primary_key() in self.bs['informs']:
-                    del self.bs['informs'][self.domain.get_primary_key()]
+                if self.domain.get_primary_key() in self.bs["informs"]:
+                    del self.bs["informs"][self.domain.get_primary_key()]
+

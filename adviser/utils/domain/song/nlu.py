@@ -31,8 +31,12 @@ from utils.common import Language
 from services.nlu import HandcraftedNLU
 import re, json, os
 
+
 def get_root_dir():
-    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    return os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    )
+
 
 class SongNLU(HandcraftedNLU):
     """Adapted handcrafted NLU for the song domain.
@@ -46,7 +50,7 @@ class SongNLU(HandcraftedNLU):
     def __init__(self, domain: LookupDomain, logger: DiasysLogger = DiasysLogger()):
         # only calls super class' constructor
         HandcraftedNLU.__init__(self, domain, logger)
-        
+
         # Getting domain information
         # self.domain_name = domain.get_domain_name()
         # self.domain_key = domain.get_primary_key()
@@ -62,8 +66,12 @@ class SongNLU(HandcraftedNLU):
         # self._initialize()
 
     @PublishSubscribe(sub_topics=["user_utterance"], pub_topics=["user_acts"])
-    def extract_user_acts(self, user_utterance: str = None, sys_act: SysAct = None, beliefstate: BeliefState = None) \
-            -> dict(user_acts=List[UserAct]):
+    def extract_user_acts(
+        self,
+        user_utterance: str = None,
+        sys_act: SysAct = None,
+        beliefstate: BeliefState = None,
+    ) -> dict(user_acts=List[UserAct]):
         """Original code but adapted to automatically add a request(name) act"""
         result = {}
 
@@ -85,8 +93,13 @@ class SongNLU(HandcraftedNLU):
                         for val in self.sys_act_info["last_act"].slot_values[key][0]:
                             if user_utterance == val.lower():
                                 slot = key
-                                self.user_acts.append(UserAct(slot=slot, value=val,
-                                                act_type=UserActionType.SelectOption))
+                                self.user_acts.append(
+                                    UserAct(
+                                        slot=slot,
+                                        value=val,
+                                        act_type=UserActionType.SelectOption,
+                                    )
+                                )
                                 result["user_acts"] = self.user_acts
                                 return result
 
@@ -107,32 +120,38 @@ class SongNLU(HandcraftedNLU):
         # not the first turn, it's a bad act
         if len(self.user_acts) == 0:
             if self.domain.get_keyword() in user_utterance:
-                self.user_acts.append(UserAct(text=user_utterance if user_utterance else "",
-                                              act_type=UserActionType.SelectDomain))
-            elif self.sys_act_info['last_act'] is not None:
+                self.user_acts.append(
+                    UserAct(
+                        text=user_utterance if user_utterance else "",
+                        act_type=UserActionType.SelectDomain,
+                    )
+                )
+            elif self.sys_act_info["last_act"] is not None:
                 # start of dialogue or no regex matched
-                self.user_acts.append(UserAct(text=user_utterance if user_utterance else "",
-                                              act_type=UserActionType.Bad))
+                self.user_acts.append(
+                    UserAct(
+                        text=user_utterance if user_utterance else "",
+                        act_type=UserActionType.Bad,
+                    )
+                )
 
         self._assign_scores()
-        result['user_acts'] = self.user_acts
+        result["user_acts"] = self.user_acts
         self.logger.dialog_turn("User Actions: %s" % str(self.user_acts))
         return result
-
 
     @PublishSubscribe(sub_topics=["sys_state"])
     def _update_sys_act_info(self, sys_state):
         print("CALLING _UPDATE_SYS_ACT_INFO")
         if "lastInformedPrimKeyVal" in sys_state:
-            self.sys_act_info['last_offer'] = sys_state['lastInformedPrimKeyVal']
+            self.sys_act_info["last_offer"] = sys_state["lastInformedPrimKeyVal"]
         if "lastRequestSlot" in sys_state:
-            self.sys_act_info['last_request'] = sys_state['lastRequestSlot']
+            self.sys_act_info["last_request"] = sys_state["lastRequestSlot"]
         if "last_act" in sys_state:
-            self.sys_act_info['last_act'] = sys_state['last_act']
+            self.sys_act_info["last_act"] = sys_state["last_act"]
             # THIS NEEDS TO BE SAVED SOMEWHERE
             # something like current song should mark this
             print(f"UPDATING LAST_ACT: {self.sys_act_info['last_act']}")
-
 
     def _match_general_act(self, user_utterance: str):
         """
@@ -150,58 +169,72 @@ class SongNLU(HandcraftedNLU):
             # Check if the regular expression and the user utterance match
             if re.search(self.general_regex[act], user_utterance, re.I):
                 # Mapping the act to User Act
-                if act != 'dontcare' and act != 'req_everything':
+                if act != "dontcare" and act != "req_everything":
                     user_act_type = UserActionType(act)
                 else:
                     user_act_type = act
                 # Check if the found user act is affirm or deny
-                if self.sys_act_info['last_act'] and (user_act_type == UserActionType.Affirm or
-                                                      user_act_type == UserActionType.Deny):
+                if self.sys_act_info["last_act"] and (
+                    user_act_type == UserActionType.Affirm
+                    or user_act_type == UserActionType.Deny
+                ):
                     # Conditions to check the history in order to assign affirm or deny
                     # slots mentioned in the previous system act
 
                     # Check if the preceeding system act was confirm
-                    if self.sys_act_info['last_act'].type == SysActionType.Confirm:
+                    if self.sys_act_info["last_act"].type == SysActionType.Confirm:
                         # Iterate over all slots in the system confimation
                         # and make a list of Affirm/Deny(slot=value)
                         # where value is taken from the previous sys act
-                        for slot in self.sys_act_info['last_act'].slot_values:
+                        for slot in self.sys_act_info["last_act"].slot_values:
                             # New user act -- Affirm/Deny(slot=value)
-                            user_act = UserAct(act_type=UserActionType(act),
-                                               text=user_utterance,
-                                               slot=slot,
-                                               value=self.sys_act_info['last_act'].slot_values[slot])
+                            user_act = UserAct(
+                                act_type=UserActionType(act),
+                                text=user_utterance,
+                                slot=slot,
+                                value=self.sys_act_info["last_act"].slot_values[slot],
+                            )
                             self.user_acts.append(user_act)
 
                     # Check if the preceeding system act was request
                     # This covers the binary requests, e.g. 'Is the course related to Math?'
-                    elif self.sys_act_info['last_act'].type == SysActionType.Request:
+                    elif self.sys_act_info["last_act"].type == SysActionType.Request:
                         # Iterate over all slots in the system request
                         # and make a list of Inform(slot={True|False})
-                        for slot in self.sys_act_info['last_act'].slot_values:
+                        for slot in self.sys_act_info["last_act"].slot_values:
                             # Assign value for the slot mapping from Affirm or Request to Logical,
                             # True if user affirms, False if user denies
-                            value = 'true' if user_act_type == UserActionType.Affirm else 'false'
+                            value = (
+                                "true"
+                                if user_act_type == UserActionType.Affirm
+                                else "false"
+                            )
                             # Adding user inform act
                             self._add_inform(user_utterance, slot, value)
 
                     # Check if Deny happens after System Request more, then trigger bye
-                    elif self.sys_act_info['last_act'].type == SysActionType.RequestMore \
-                            and user_act_type == UserActionType.Deny:
-                        user_act = UserAct(text=user_utterance, act_type=UserActionType.Bye)
+                    elif (
+                        self.sys_act_info["last_act"].type == SysActionType.RequestMore
+                        and user_act_type == UserActionType.Deny
+                    ):
+                        user_act = UserAct(
+                            text=user_utterance, act_type=UserActionType.Bye
+                        )
                         self.user_acts.append(user_act)
 
                 # Check if Request or Select is the previous system act
-                elif user_act_type == 'dontcare':
-                    if self.sys_act_info['last_act'].type == SysActionType.Request or \
-                            self.sys_act_info['last_act'].type == SysActionType.Select:
+                elif user_act_type == "dontcare":
+                    if (
+                        self.sys_act_info["last_act"].type == SysActionType.Request
+                        or self.sys_act_info["last_act"].type == SysActionType.Select
+                    ):
                         # Iteration over all slots mentioned in the last system act
-                        for slot in self.sys_act_info['last_act'].slot_values:
+                        for slot in self.sys_act_info["last_act"].slot_values:
                             # Adding user inform act
                             self._add_inform(user_utterance, slot, value=user_act_type)
 
                 # Check if the user wants to get all information about a particular entity
-                elif user_act_type == 'req_everything':
+                elif user_act_type == "req_everything":
                     self.req_everything = True
 
                 else:
@@ -210,8 +243,6 @@ class SongNLU(HandcraftedNLU):
                     # New user act -- UserAct()
                     user_act = UserAct(act_type=user_act_type, text=user_utterance)
                     self.user_acts.append(user_act)
-
-
 
     def _initialize(self):
         """
@@ -224,19 +255,35 @@ class SongNLU(HandcraftedNLU):
         if self.language == Language.ENGLISH:
             # Loading regular expression from JSON files
             # as dictionaries {act:regex, ...} or {slot:{value:regex, ...}, ...}
-            self.general_regex = json.load(open(self.base_folder + '/GeneralRules.json'))
-            self.request_regex = json.load(open(self.base_folder + '/' + self.domain_name
-                                                + 'RequestRules.json'))
-            self.inform_regex = json.load(open(self.base_folder + '/' + self.domain_name
-                                               + 'InformRules.json'))
+            self.general_regex = json.load(
+                open(self.base_folder + "/GeneralRules.json")
+            )
+            self.request_regex = json.load(
+                open(self.base_folder + "/" + self.domain_name + "RequestRules.json")
+            )
+            self.inform_regex = json.load(
+                open(self.base_folder + "/" + self.domain_name + "InformRules.json")
+            )
         elif self.language == Language.GERMAN:
             # TODO: Change this once
             # Loading regular expression from JSON files
             # as dictionaries {act:regex, ...} or {slot:{value:regex, ...}, ...}
-            self.general_regex = json.load(open(self.base_folder + '/GeneralRulesGerman.json'))
-            self.request_regex = json.load(open(self.base_folder + '/' + self.domain_name
-                                                + 'GermanRequestRules.json'))
-            self.inform_regex = json.load(open(self.base_folder + '/' + self.domain_name
-                                               + 'GermanInformRules.json'))
+            self.general_regex = json.load(
+                open(self.base_folder + "/GeneralRulesGerman.json")
+            )
+            self.request_regex = json.load(
+                open(
+                    self.base_folder
+                    + "/"
+                    + self.domain_name
+                    + "GermanRequestRules.json"
+                )
+            )
+            self.inform_regex = json.load(
+                open(
+                    self.base_folder + "/" + self.domain_name + "GermanInformRules.json"
+                )
+            )
         else:
-            print('No language')
+            print("No language")
+
