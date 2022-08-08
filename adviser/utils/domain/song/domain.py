@@ -240,6 +240,7 @@ class SongDomain(LookupDomain):
             album_name = 'Aftermath'"""
         type = "track"
         market = "DE"
+        album_name = album_name.replace("?", "")
         if not track_name:
             query = f"artist:{artist_name}, album:{album_name}"
             try:

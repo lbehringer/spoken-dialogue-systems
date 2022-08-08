@@ -60,7 +60,7 @@ rule request(valence)
     "highest {slot_synonyms("valence")}"
 
 rule request(instrumentalness)
-    "highest {slot_synonyms("instrumentalness")}
+    "highest {slot_synonyms("instrumentalness")}"
 
 # Select one of several options
 
