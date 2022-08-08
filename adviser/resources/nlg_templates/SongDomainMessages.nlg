@@ -119,7 +119,7 @@ template reqmore()
 
 
 template select(danceability, instrumentalness, valence, *track_name)
-	"I found several tracks matching your constraints. You can either select one of these track names: {for_entry(track_name, "track_name_or_dontcare_list", "", "")}. Or you can select a track based on danceability or positivity."
+	"I found several tracks matching your constraints. You can either select one of these track names: {for_entry(track_name, "track_name_or_dontcare_list", "", "")}. Or you can select a track based on danceability, positivity, or instrumentalness."
 	
 template select(*slot)
 	"Please select one of the following tracks: {for_entry(slot, "track_name_or_dontcare_list", "", "")}."
