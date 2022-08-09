@@ -13,7 +13,7 @@ def get_artist_id(artist_name):
     market = "DE"
     limit = 3
     results = spotify.search(q, type=type, market=market, limit=limit)
-    print("Artist found: " + results["artists"]["items"][0]["name"])
+    # print("Artist found: " + results["artists"]["items"][0]["name"])
     return results["artists"]["items"][0]["id"]
 
 
@@ -100,33 +100,51 @@ if __name__ == "__main__":
 
     artist_names = get_artist_names(args.artists_file)
     # For each artist, retrieve albums and tracks for specified number of top tracks
-    min = 3
-    for artist_name in artist_names:
+    album_limit = 3
+    # create file with albums and artists for users as information what can be requested
+    csv_file = args.db_file.rstrip(".db") + "_db.csv"
+    if os.path.isfile(csv_file):
+        os.remove(csv_file)
+    with open(csv_file, "a") as f:
+        for artist_name in artist_names:
 
-        artist_id = get_artist_id(artist_name)
-        top_tracks = get_top_tracks(artist_id)
-        min = get_minimum_album_number(min, top_tracks)
-        unique_albums = get_unique_albums(top_tracks)
-        num_added_items = 0
-        i = 0
-        while num_added_items < min:
-            track_name, track_id, album_name, album_id = get_track_data(top_tracks[i])
-            if album_name in unique_albums:
-                unique_albums.remove(album_name)
-                print(f"removing {album_name}")
-                print(f"remaining albums: {unique_albums}")
-                print(f"adding {track_name}, {album_name}")
-                add_row_to_db(
-                    con,
-                    cur,
-                    artist_name,
-                    artist_id,
-                    album_name,
-                    album_id,
-                    track_name,
-                    track_id,
+            artist_id = get_artist_id(artist_name)
+            top_tracks = get_top_tracks(artist_id)
+            album_limit = get_minimum_album_number(album_limit, top_tracks)
+            unique_albums = get_unique_albums(top_tracks)
+            num_added_items = 0
+            i = 0
+            while num_added_items < album_limit:
+                track_name, track_id, album_name, album_id = get_track_data(
+                    top_tracks[i]
                 )
-                num_added_items += 1
-            i += 1
-    con.commit()
-    con.close()
+                # add to db if no track of this album has been added before
+                if album_name in unique_albums:
+                    unique_albums.remove(album_name)
+                    # remove parentheses so the system will recognize user inform
+                    album_name = (
+                        album_name.replace("(", "")
+                        .replace(")", "")
+                        .replace(",", "")
+                        .replace("[", "")
+                        .replace("]", "")
+                    )
+
+                    f.write(f"{artist_name},{album_name}\n")
+
+                    # print(f"adding {track_name}, {album_name}")
+
+                    add_row_to_db(
+                        con,
+                        cur,
+                        artist_name,
+                        artist_id,
+                        album_name,
+                        album_id,
+                        track_name,
+                        track_id,
+                    )
+                    num_added_items += 1
+                i += 1
+        con.commit()
+        con.close()

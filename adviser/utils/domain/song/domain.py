@@ -57,22 +57,20 @@ class SongDomain(LookupDomain):
                 return []
             description = "description_placeholder"
             result_list = []
-            # if type(response) == str:
-            #     track_name = response
-            #     track_id = track["id"]
-            #     result_dict = {
-            #     'artificial_id': track_id,
-            #     'track_name': track_name,
-            #     'description': description,
-            #     'artist_name': constraints['artist_name'],
-            #     'album_name': constraints['album_name']
-            #     }
+
             if type(response) == list:
                 if len(response) == 1:
                     track_name = response[0]["name"]
-                    instrumentalness = response[0]["audio_features"]["instrumentalness"]
-                    danceability = response[0]["audio_features"]["danceability"]
-                    valence = response[0]["audio_features"]["valence"]
+                    if track["audio_features"]:
+                        instrumentalness = response[0]["audio_features"][
+                            "instrumentalness"
+                        ]
+                        danceability = response[0]["audio_features"]["danceability"]
+                        valence = response[0]["audio_features"]["valence"]
+                    else:
+                        instrumentalness = 0
+                        danceability = 0
+                        valence = 0
                     preview_url = response[0]["preview_url"]
                     if not preview_url:
                         preview_url = "none"
@@ -91,9 +89,16 @@ class SongDomain(LookupDomain):
                     result_list = []
                     for i, track in enumerate(response):
                         track_name = track["name"]
-                        instrumentalness = track["audio_features"]["instrumentalness"]
-                        danceability = track["audio_features"]["danceability"]
-                        valence = track["audio_features"]["valence"]
+                        if track["audio_features"]:
+                            instrumentalness = track["audio_features"][
+                                "instrumentalness"
+                            ]
+                            danceability = track["audio_features"]["danceability"]
+                            valence = track["audio_features"]["valence"]
+                        else:
+                            instrumentalness = 0
+                            danceability = 0
+                            valence = 0
                         preview_url = track["preview_url"]
                         if not preview_url:
                             preview_url = "none"
@@ -112,9 +117,14 @@ class SongDomain(LookupDomain):
 
             elif type(response) == dict:
                 track_name = response["name"]
-                instrumentalness = response["audio_features"]["instrumentalness"]
-                danceability = response["audio_features"]["danceability"]
-                valence = response["audio_features"]["valence"]
+                if track["audio_features"]:
+                    instrumentalness = response["audio_features"]["instrumentalness"]
+                    danceability = response["audio_features"]["danceability"]
+                    valence = response["audio_features"]["valence"]
+                else:
+                    instrumentalness = 0
+                    danceability = 0
+                    valence = 0
                 preview_url = response["preview_url"]
                 if not preview_url:
                     preview_url = "none"
@@ -240,7 +250,12 @@ class SongDomain(LookupDomain):
             album_name = 'Aftermath'"""
         type = "track"
         market = "DE"
-        album_name = album_name.replace("?", "")
+        album_name = (
+            album_name.replace("?", "")
+            .replace(".", "")
+            .replace(",", "")
+            .replace("-", "")
+        )
         if not track_name:
             query = f"artist:{artist_name}, album:{album_name}"
             try:
