@@ -43,20 +43,20 @@ def load_nlg(backchannel: bool, domain=None):
 
 
 def load_songfinder_domain(backchannel: bool = False):
-    # from utils.domain.jsonlookupdomain import JSONLookupDomain
+    # adjust import: originally was `from utils.domain.jsonlookupdomain import JSONLookupDomain`
     from utils.domain.song import SongDomain
 
-    # from services.nlu.nlu import HandcraftedNLU
+    # adjust import: originally was `from services.nlu.nlu import HandcraftedNLU`
     from utils.domain.song.nlu import SongNLU
     from services.nlg.nlg import HandcraftedNLG
 
-    # from services.policy import HandcraftedPolicy
+    # adjust import: originally was `from services.policy import HandcraftedPolicy`
     from services.policy.policy_api import HandcraftedPolicy as PolicyAPI
 
     songfinder = SongDomain()
     song_nlu = SongNLU(domain=songfinder)
     song_bst = HandcraftedBST(domain=songfinder)
-    # song_policy = HandcraftedPolicy(domain=domain)
+    # adjust assignment: originally way `song_policy = HandcraftedPolicy(domain=domain)`
     song_policy = PolicyAPI(domain=songfinder)
     song_nlg = load_nlg(backchannel=backchannel, domain=songfinder)
     return songfinder, [song_nlu, song_bst, song_policy, song_nlg]

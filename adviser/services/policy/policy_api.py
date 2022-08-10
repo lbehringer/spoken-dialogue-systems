@@ -55,9 +55,8 @@ class HandcraftedPolicy(Service):
         )
         self.domain_key = domain.get_primary_key()
         self.logger = logger
-        self.memory = (
-            []
-        )  # list that is populated with all previously retrieved information (each entry is a dict)
+        # create memory attribute; this is list that is populated with all previously retrieved information (each entry is a dict)
+        self.memory = []
 
     @PublishSubscribe(sub_topics=["beliefstate"], pub_topics=["sys_act", "sys_state"])
     def choose_sys_act(
@@ -175,6 +174,7 @@ class HandcraftedPolicy(Service):
         if self.memory:
             memory_results = []
             constraints, _ = self._get_constraints(beliefstate)
+            # temporarily add all memory entries to the results, then delete all memory entries that don't match
             for memory_entry in self.memory:
                 memory_results.append(memory_entry)
                 for constraint in constraints:
@@ -355,7 +355,7 @@ class HandcraftedPolicy(Service):
             )
             return sys_act, {"last_action": sys_act}
 
-        # Otherwise we need to query the db to determine next action
+        # Otherwise we need to query the db to determine next action (results are either from memory or from API response)
         results = self._query_db(beliefstate)
         # if memory is empty, populate it (after first API request)
         if not self.memory:
@@ -366,7 +366,7 @@ class HandcraftedPolicy(Service):
             artificial_ids = []
             self.memory = []
             cleaned_results = []
-            # remove entries without key "artificial_id"
+            # remove memory entries without key "artificial_id"
             for memory_entry in temp_memory:
                 if not memory_entry["artificial_id"]:
                     continue
@@ -375,11 +375,11 @@ class HandcraftedPolicy(Service):
                 self.memory.append((memory_entry))
                 artificial_ids.append(memory_entry["artificial_id"])
 
-            # remove entries without key "artificial_id"
+            # remove results entries without key "artificial_id"
             for result in results:
                 if result["artificial_id"]:
                     cleaned_results.append(result)
-            # append results which were not in memory before
+            # append those results to memory which it didn't contain before
             for result in cleaned_results:
                 if result["artificial_id"] not in artificial_ids:
                     self.memory.append(result)
@@ -398,9 +398,7 @@ class HandcraftedPolicy(Service):
             # update belief state to reflect the offer we just made
             values = sys_act.get_values(self.domain.get_primary_key())
             if values:
-                # belief_state['system']['lastInformedPrimKeyVal'] = values[0]
                 sys_state["lastInformedPrimKeyVal"] = values[0]
-                pass
             else:
                 sys_act.add_value(self.domain.get_primary_key(), "none")
 
@@ -423,9 +421,14 @@ class HandcraftedPolicy(Service):
         --LV
         """
         sys_act = SysAct()
-        # if there is more than one result
+        """
+        If there is more than one result, the user has to discriminate between the results. 
+        If the last user act was a request for a selectable slot, a single result can be found and informed. 
+        Otherwise, the system needs to find the slot with most unique values (usually track name) and create a Select system act.
+        """
         if len(q_res) > 1:
-            # if user requested max danceability, instrumentalness or valence
+            """If last user act was a Request for a selectable slot (e.g. max danceability, instrumentalness or valence) 
+               in order to select from a list of tracks, return InformByName system act."""
             if UserActionType.Request in beliefstate["user_acts"]:
                 selectable_slots = self.domain.get_selectable_slots(q_res[0])
                 for selectable_slot in selectable_slots:
@@ -433,6 +436,8 @@ class HandcraftedPolicy(Service):
                         sys_act.type = SysActionType.InformByName
                         return sys_act
 
+            """Else, find the slot with the most unique values, which then have to be discriminated. 
+               Create a Select sys_act for this slot and add all unique values to the sys_act."""
             constraints, dontcare = self._get_constraints(beliefstate)
             # Gather all the results for each column
             temp = {key: [] for key in q_res[0].keys()}
@@ -449,14 +454,13 @@ class HandcraftedPolicy(Service):
                 if len(set(temp[key])) > max_set_len:
                     max_len_key = key
                     max_set_len = len(set(temp[key]))
-            # next_sel = self._gen_next_select(max_len_key, beliefstate)
             sys_act.type = SysActionType.Select
             sys_act.add_value(max_len_key, value=temp[max_len_key])
             for selectable_slot in self.domain.get_selectable_slots(q_res[0]):
                 sys_act.add_value(selectable_slot, value="none")
             return sys_act
 
-        # Otherwise SysActionType will be InformByName, so return an empty InformByName (to be filled in later)
+        # If there is only one result, the SysActionType will be InformByName, so return an empty InformByName (to be filled in later)
         sys_act.type = SysActionType.InformByName
         return sys_act
 
@@ -663,6 +667,15 @@ class HandcraftedPolicy(Service):
             sys_act.add_value(c, constraints[c])
 
         if self.current_suggestions:
+            """
+            If the last user act was a Request, empty the current sys_act.slot_values. 
+                If the User Request was for a selectable slot, select the result with the highest value
+                for this slot and add it to sys_act. Set the sys_act type to InformByName.
+                Furthermore, create a policy_beliefstate dict which will be passed back to the BST such that 
+                the beliefstate information can be saved until the next turn. 
+                (Otherwise, a correct sys_act would be generated, but the updated beliefstate would be lost in the next turn, resulting in a loop.)
+                Else, the User Request was not for a selectable slot, so just re-populate the sys_act via current_suggestions.
+            """
             if UserActionType.Request in belief_state["user_acts"]:
                 # delete previously stored slot values from sys_act
                 sys_act.slot_values = {}

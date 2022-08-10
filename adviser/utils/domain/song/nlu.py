@@ -85,7 +85,6 @@ class SongNLU(HandcraftedNLU):
             if self.sys_act_info["last_act"].type == SysActionType.Select:
                 if user_utterance is not None:
                     user_utterance = user_utterance.strip()
-                    # PASS INFO FOR DANCEABILITY IN A WAY THAT IT COULD BE UPDATED IN THE BST
                     if self.sys_act_info["last_act"].slot_values:
                         # check if user utterance matches any of the selectable values (e.g. for track_name, if it matches one of the track_name options)
                         key = list(self.sys_act_info["last_act"].slot_values.keys())[0]

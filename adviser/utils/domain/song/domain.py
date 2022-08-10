@@ -16,7 +16,6 @@ from utils.domain.lookupdomain import LookupDomain
 # SPOTIPY_CLIENT_SECRET = "this_needs_to_be_environment_variable"
 
 
-### class SongDomain
 class SongDomain(LookupDomain):
     """Domain for the Spotify API.
 
@@ -55,13 +54,13 @@ class SongDomain(LookupDomain):
                 )
             if response is None:
                 return []
-            description = "description_placeholder"
+
             result_list = []
 
             if type(response) == list:
                 if len(response) == 1:
                     track_name = response[0]["name"]
-                    if track["audio_features"]:
+                    if response[0]["audio_features"]:
                         instrumentalness = response[0]["audio_features"][
                             "instrumentalness"
                         ]
@@ -115,6 +114,7 @@ class SongDomain(LookupDomain):
                         }
                         result_list.append(result_dict)
 
+            # in case of a change to the _query method such that it would return a dict instead of a list of dicts
             elif type(response) == dict:
                 track_name = response["name"]
                 if track["audio_features"]:
@@ -244,10 +244,15 @@ class SongDomain(LookupDomain):
         return "artificial_id"
 
     def _query(self, artist_name, album_name, track_name=None):
-        """if artist_name is None:
-            artist_name = 'Rolling Stones'
-        if album_name is None:
-            album_name = 'Aftermath'"""
+        """
+            Make an API request and return results in a list.
+            Args:
+                artist_name (str)
+                album_name (str)
+                track_name (str, defaults to None)
+            Returns:
+                API response (list of dicts)
+        """
         type = "track"
         market = "DE"
         album_name = (
@@ -285,7 +290,7 @@ class SongDomain(LookupDomain):
                 return None
 
     def _confirm_artist_id(self, artist_name):
-        """if there is no exact match for artist_name string, suggest first result to user """
+        """TODO: if there is no exact match for artist_name string, suggest first result to user """
         pass
 
     def get_keyword(self):

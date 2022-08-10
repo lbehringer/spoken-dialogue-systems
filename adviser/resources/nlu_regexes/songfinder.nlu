@@ -10,7 +10,9 @@ rule reqalts(): "(\\b|^|\\ )((something|anything)\\ else)|(different(\\ one)*)|(
 rule ack(): "{IMPOSSIBLEREGEX()}"
 rule bad(): "{IMPOSSIBLEREGEX()}"
 
-# user informable slots are album_name and artist_name
+
+
+# User Informables
 
 rule inform(album_name)
     "{album_name}"
@@ -25,15 +27,14 @@ rule inform(track_name)
     "the track name should be {track_name}"
 
 
-# All slots are requestable
 
+# User Requests
 
 rule request(artist_name)
     "what is their {slot_synonyms("artist_name")}"
 
 rule request(artist_id)
     "what is their{slot_synonyms("artist_id")}"
-
 
 rule request(album_name)
     "what is their {slot_synonyms("album_name")}"
@@ -62,10 +63,14 @@ rule request(valence)
 rule request(instrumentalness)
     "highest {slot_synonyms("instrumentalness")}"
 
-# Select one of several options
+
+
+# User select Select one of several options
 
 rule selectoption(track_name)
-    "I select {slot_synonyms("track_name")}"
+    "{slot_synonyms("track_name")}"
+
+
 
 # synonyms
 
@@ -74,8 +79,6 @@ function synonyms(slot, value)
     add_if slot = "album_name"
         if value = ""
             ""
-
-
 
 function slot_synonyms(slot)
     "{IMPOSSIBLEREGEX()}"
