@@ -35,55 +35,19 @@ For details, please see the README of the official ADVISER repository: https://g
 Install python requirements with pip
 ------------------------------------
 
-ADvISER needs to be executed in a Python3 environment.
-
-Once you obtained the code, navigate to its top level directory where you will find the file
-``requirements_base.txt``, which lists all modules you need to run a basic text-to-text version of ADvISER. We suggest to create a
-virtual environment from the top level directory, as shown below, followed by installing the necessary packages.
+For details, please see the README of the official ADVISER repository: https://github.com/DigitalPhonetics/adviser/
 
 
-1. (Requires pip or pip3) Make sure you have virtualenv installed by executing
+Run the conDUCKtor songfinder dialog system
+-------------------------------------------
 
-.. code-block:: bash
-
-    python3 -m pip install --user virtualenv
-
-2. Create the virtual environment (replace envname with a name of your choice)
-
-.. code-block:: bash
-
-    python3 -m venv <path-to-env>
-
-3. Source the environment (this has to be repeated every time you want to use ADVISER inside a
-new terminal session)
-
-.. code-block:: bash
-
-    source <path-to-env>/bin/activate
-
-4. Install the required packages
-
-.. code-block:: bash
-
-    pip install -r requirements_base.txt 
- 
-(NOTE: or requirements_multimodal.txt if you want to use ASR / TTS)
-
-
-5. Navigate to the adviser folder
-
-.. code-block:: bash
-
-    cd adviser
-
-and, to make sure your installation is working, execute
-
+You can run the conDUCKtor system with the following command:
 
 .. code-block:: bash
 
     python run_songfinder_chat.py songfinder
     
-You can type text to chat with the system (confirm your utterance by pressing the ``Enter``-Key once) or type ``bye`` (followed by pressing the ``Enter``-Key once) to end the conversation.
+You can type text to chat with the system (confirm your utterance by pressing the ``Enter``-Key once) or type ``bye`` (followed by pressing the ``Enter``-Key once) to end the conversation. (If the number of dialogs is set to more than 1, the conversation will restart after typing ``bye``. In this case, you can terminate the system via ``Ctrl+C``.)
 
 
 How to cite
