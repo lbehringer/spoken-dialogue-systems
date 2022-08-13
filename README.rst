@@ -39,7 +39,7 @@ For details, please see the README of the official ADVISER repository: https://g
 
 
 Run the conDUCKtor songfinder dialog system
--------------------------------------------
+===========================================
 
 You can run the conDUCKtor system with the following command:
 
