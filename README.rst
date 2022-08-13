@@ -15,6 +15,7 @@ Documentation
 Installation
 ============
 
+For installation details, please see the README of the official `ADVISER repository <https://github.com/DigitalPhonetics/adviser>`.
 Note: Adviser 2.0 is currently only tested on Linux and Mac (Windows is possible using WSL2 (Ubuntu), for M1 chips see the extra section near the bottom of this file).
 
 Downloading the code
